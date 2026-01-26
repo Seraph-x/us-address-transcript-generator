@@ -107,6 +107,59 @@ const SchoolMatcher = {
     // Get schools by state
     getSchoolsByState(state) {
         return this.schoolsByState[state] || [];
+    },
+
+    // Find multiple matching schools (for school selector)
+    findMultipleByZip(zipCode, state, count = 5) {
+        let candidates = [];
+        const seen = new Set();
+
+        // Helper to add schools without duplicates
+        const addSchools = (schoolList) => {
+            for (const school of schoolList) {
+                const key = `${school.name}-${school.zip}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    candidates.push(school);
+                }
+            }
+        };
+
+        // 1. Exact ZIP match (highest priority)
+        if (this.schoolsByZip[zipCode]) {
+            const exactMatches = this.schoolsByZip[zipCode].filter(s => s.zip === zipCode);
+            addSchools(exactMatches);
+        }
+
+        // 2. ZIP prefix match (same area)
+        if (candidates.length < count) {
+            const zipPrefix = zipCode.substring(0, 3);
+            if (this.schoolsByZip[zipPrefix]) {
+                addSchools(this.schoolsByZip[zipPrefix]);
+            }
+        }
+
+        // 3. Same state fallback
+        if (candidates.length < count && this.schoolsByState[state]) {
+            addSchools(this.schoolsByState[state]);
+        }
+
+        return candidates.slice(0, count);
+    },
+
+    // Match address to multiple schools (returns array)
+    matchMultiple(addressData, count = 5) {
+        const schools = this.findMultipleByZip(addressData.zipCode, addressData.state, count);
+
+        return schools.map(school => ({
+            name: school.name,
+            address: school.address,
+            city: school.city,
+            state: school.state,
+            zip: school.zip,
+            phone: school.phone,
+            fullAddress: `${school.address}, ${school.city}, ${school.state} ${school.zip}`
+        }));
     }
 };
 

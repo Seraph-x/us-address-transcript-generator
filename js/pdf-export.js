@@ -17,8 +17,12 @@ const PDFExporter = {
             const downloadBtn = document.getElementById('downloadPdfBtn');
             if (downloadBtn) {
                 downloadBtn.disabled = true;
-                downloadBtn.innerHTML = '<span class="loading-spinner"></span> 生成中...';
+                downloadBtn.innerHTML = '<span class="loading-spinner"></span> Generating...';
             }
+
+            // Get watermark text
+            const watermarkEl = document.getElementById('schoolWatermark');
+            const watermarkText = watermarkEl ? watermarkEl.textContent : '';
 
             // Wait for html2canvas and jsPDF to be available
             await this.loadDependencies();
@@ -53,15 +57,17 @@ const PDFExporter = {
             const imgData = canvas.toDataURL('image/png');
 
             // Handle multi-page if content is too long
-            let yPosition = margin;
             const pageContentHeight = pdfHeight - (margin * 2);
 
             if (scaledHeight <= pageContentHeight) {
                 // Single page
-                pdf.addImage(imgData, 'PNG', margin, yPosition, contentWidth, scaledHeight);
+                pdf.addImage(imgData, 'PNG', margin, margin, contentWidth, scaledHeight);
+                // Add watermark to single page
+                this.addWatermark(pdf, watermarkText, pdfWidth, pdfHeight);
             } else {
                 // Multi-page - split the canvas
                 let currentY = 0;
+                let pageNum = 0;
                 while (currentY < imgHeight) {
                     if (currentY > 0) {
                         pdf.addPage();
@@ -79,7 +85,11 @@ const PDFExporter = {
                     const sliceData = tempCanvas.toDataURL('image/png');
                     pdf.addImage(sliceData, 'PNG', margin, margin, contentWidth, sliceHeight * ratio);
 
+                    // Add watermark to each page
+                    this.addWatermark(pdf, watermarkText, pdfWidth, pdfHeight);
+
                     currentY += sliceHeight;
+                    pageNum++;
                 }
             }
 
@@ -89,7 +99,7 @@ const PDFExporter = {
             // Reset button state
             if (downloadBtn) {
                 downloadBtn.disabled = false;
-                downloadBtn.innerHTML = '📄 下载 PDF';
+                downloadBtn.innerHTML = '📄 Download PDF';
             }
 
         } catch (error) {
@@ -99,11 +109,38 @@ const PDFExporter = {
             const downloadBtn = document.getElementById('downloadPdfBtn');
             if (downloadBtn) {
                 downloadBtn.disabled = false;
-                downloadBtn.innerHTML = '📄 下载 PDF';
+                downloadBtn.innerHTML = '📄 Download PDF';
             }
 
-            alert('PDF 导出失败，请重试。');
+            alert('PDF export failed. Please try again.');
         }
+    },
+
+    // Add watermark to a PDF page
+    addWatermark(pdf, text, pageWidth, pageHeight) {
+        if (!text) return;
+
+        pdf.saveGraphicsState();
+
+        // Set watermark style
+        pdf.setTextColor(200, 200, 200); // Light gray
+        pdf.setFontSize(48);
+        pdf.setFont('helvetica', 'bold');
+
+        // Calculate center position
+        const centerX = pageWidth / 2;
+        const centerY = pageHeight / 2;
+
+        // Rotate and draw watermark
+        const angle = -45 * Math.PI / 180;
+
+        // Draw watermark text at center, rotated
+        pdf.text(text, centerX, centerY, {
+            align: 'center',
+            angle: -45
+        });
+
+        pdf.restoreGraphicsState();
     },
 
     // Load external dependencies

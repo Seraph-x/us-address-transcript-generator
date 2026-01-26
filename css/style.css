@@ -12,26 +12,26 @@
   --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  
+
   --bg-dark: #0f0f1a;
   --bg-card: rgba(30, 30, 50, 0.8);
   --bg-glass: rgba(255, 255, 255, 0.05);
   --bg-input: rgba(255, 255, 255, 0.08);
-  
+
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.7);
   --text-muted: rgba(255, 255, 255, 0.5);
-  
+
   --border-glass: rgba(255, 255, 255, 0.1);
   --border-focus: rgba(102, 126, 234, 0.5);
-  
+
   --shadow-glow: 0 0 40px rgba(102, 126, 234, 0.3);
   --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
-  
+
   /* Typography */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'SF Mono', 'Fira Code', monospace;
-  
+
   /* Spacing */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
@@ -39,13 +39,13 @@
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
-  
+
   /* Border Radius */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
-  
+
   /* Transitions */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.3s ease;
@@ -55,7 +55,9 @@
 /* =====================================================
    Base Styles & Reset
    ===================================================== */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -83,7 +85,7 @@ body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
+  background:
     radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.15) 0%, transparent 50%),
     radial-gradient(circle at 40% 40%, rgba(79, 172, 254, 0.1) 0%, transparent 40%);
@@ -93,22 +95,42 @@ body::before {
 }
 
 @keyframes backgroundPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
 }
 
 /* =====================================================
    Typography
    ===================================================== */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600;
   line-height: 1.3;
   margin-bottom: var(--spacing-md);
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 1.75rem; }
-h3 { font-size: 1.25rem; }
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 1.75rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+}
 
 /* =====================================================
    Layout
@@ -208,6 +230,7 @@ h3 { font-size: 1.25rem; }
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -419,7 +442,9 @@ select.form-control {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* =====================================================
@@ -478,6 +503,89 @@ select.form-control {
   color: #667eea;
 }
 
+.level-ib {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
+
+/* =====================================================
+   Inline Edit & New Features
+   ===================================================== */
+.hidden {
+  display: none !important;
+}
+
+.inline-edit {
+  background: var(--bg-input);
+  border: 1px solid var(--border-focus);
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  width: 100%;
+  max-width: 200px;
+}
+
+.btn-sm {
+  padding: 4px 12px;
+  font-size: 0.875rem;
+}
+
+.form-control-inline {
+  width: auto;
+  min-width: 150px;
+  display: inline-block;
+}
+
+/* Logo Preview */
+.logo-preview-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--bg-glass);
+  border-radius: var(--radius-sm);
+}
+
+.logo-preview {
+  max-width: 80px;
+  max-height: 80px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+/* School Logo in Transcript */
+.school-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+/* Watermark Effect */
+.watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-size: 60px;
+  color: rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Verification Note */
+.verification-note {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 8px;
+}
+
 /* =====================================================
    Transcript Preview
    ===================================================== */
@@ -486,10 +594,13 @@ select.form-control {
   color: #1a1a2e;
   border-radius: var(--radius-lg);
   overflow: hidden;
+  position: relative;
 }
 
 .transcript-inner {
   padding: var(--spacing-xl);
+  position: relative;
+  z-index: 2;
 }
 
 .transcript-header {
@@ -631,28 +742,28 @@ select.form-control {
   .container {
     padding: var(--spacing-md);
   }
-  
+
   .app-header h1 {
     font-size: 1.75rem;
   }
-  
+
   .card {
     padding: var(--spacing-md);
   }
-  
+
   .transcript-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .credit-summary {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .info-row {
     flex-direction: column;
     gap: var(--spacing-xs);
   }
-  
+
   .info-label {
     min-width: auto;
   }
@@ -661,15 +772,41 @@ select.form-control {
 /* =====================================================
    Utility Classes
    ===================================================== */
-.text-center { text-align: center; }
-.text-muted { color: var(--text-muted); }
-.text-small { font-size: 0.875rem; }
-.mt-sm { margin-top: var(--spacing-sm); }
-.mt-md { margin-top: var(--spacing-md); }
-.mt-lg { margin-top: var(--spacing-lg); }
-.mb-sm { margin-bottom: var(--spacing-sm); }
-.mb-md { margin-bottom: var(--spacing-md); }
-.mb-lg { margin-bottom: var(--spacing-lg); }
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-small {
+  font-size: 0.875rem;
+}
+
+.mt-sm {
+  margin-top: var(--spacing-sm);
+}
+
+.mt-md {
+  margin-top: var(--spacing-md);
+}
+
+.mt-lg {
+  margin-top: var(--spacing-lg);
+}
+
+.mb-sm {
+  margin-bottom: var(--spacing-sm);
+}
+
+.mb-md {
+  margin-bottom: var(--spacing-md);
+}
+
+.mb-lg {
+  margin-bottom: var(--spacing-lg);
+}
 
 /* =====================================================
    Print Styles
@@ -678,17 +815,18 @@ select.form-control {
   body {
     background: white;
   }
-  
+
   body::before {
     display: none;
   }
-  
+
   .card {
     box-shadow: none;
     border: 1px solid #ddd;
   }
-  
-  .btn, .copy-btn {
+
+  .btn,
+  .copy-btn {
     display: none;
   }
 }

@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="生成真实的美国地址和高中成绩单，自动匹配附近的公立高中。支持PDF导出。">
   <title>美国地址 & 高中成绩单生成器 | US Address & Transcript Generator</title>
-  
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+
   <!-- Styles -->
   <link rel="stylesheet" href="css/style.css">
-  
+
   <!-- Favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
 </head>
+
 <body>
   <div class="container">
     <!-- Header -->
@@ -48,35 +51,56 @@
         <div class="card address-card mb-lg">
           <div class="card-header">
             <h2><span class="icon">👤</span> 学生信息</h2>
+            <button id="editStudentBtn" class="btn btn-secondary btn-sm">✏️ 编辑</button>
           </div>
-          
+
+          <div class="info-row">
+            <span class="info-label">学生ID</span>
+            <span class="info-value" id="displayStudentId">-</span>
+            <button class="copy-btn" data-target="displayStudentId" title="复制">📋</button>
+          </div>
+
           <div class="info-row">
             <span class="info-label">姓名</span>
-            <span class="info-value" id="displayName">-</span>
+            <span class="info-value editable-field" id="displayName">-</span>
+            <input type="text" class="inline-edit hidden" id="editName">
             <button class="copy-btn" data-target="displayName" title="复制">📋</button>
           </div>
-          
+
           <div class="info-row">
             <span class="info-label">性别</span>
             <span class="info-value" id="displayGender">-</span>
           </div>
-          
+
           <div class="info-row">
             <span class="info-label">出生日期</span>
-            <span class="info-value" id="displayDob">-</span>
+            <span class="info-value editable-field" id="displayDob">-</span>
+            <input type="text" class="inline-edit hidden" id="editDob" placeholder="MM/DD/YYYY">
             <button class="copy-btn" data-target="displayDob" title="复制">📋</button>
           </div>
-          
+
           <div class="info-row">
             <span class="info-label">地址</span>
-            <span class="info-value" id="displayAddress">-</span>
+            <span class="info-value editable-field" id="displayAddress">-</span>
+            <input type="text" class="inline-edit hidden" id="editAddress">
             <button class="copy-btn" data-target="displayAddress" title="复制">📋</button>
           </div>
-          
+
           <div class="info-row">
             <span class="info-label">电话</span>
-            <span class="info-value" id="displayPhone">-</span>
+            <span class="info-value editable-field" id="displayPhone">-</span>
+            <input type="text" class="inline-edit hidden" id="editPhone">
             <button class="copy-btn" data-target="displayPhone" title="复制">📋</button>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">在读状态</span>
+            <select id="enrollmentStatusSelect" class="form-control form-control-inline">
+              <option value="Active">Active (在读)</option>
+              <option value="Graduated">Graduated (已毕业)</option>
+              <option value="Transferred">Transferred (已转学)</option>
+              <option value="Withdrawn">Withdrawn (退学)</option>
+            </select>
           </div>
         </div>
 
@@ -85,23 +109,39 @@
           <div class="card-header">
             <h2><span class="icon">🏫</span> 匹配的学校</h2>
           </div>
-          
+
+          <div class="form-group">
+            <label class="form-label">选择学校 (精确匹配 + 附近学校)</label>
+            <select id="schoolSelect" class="form-control">
+              <option value="">请先生成地址</option>
+            </select>
+          </div>
+
           <div class="info-row">
             <span class="info-label">学校名称</span>
             <span class="info-value" id="displaySchoolName">-</span>
             <button class="copy-btn" data-target="displaySchoolName" title="复制">📋</button>
           </div>
-          
+
           <div class="info-row">
             <span class="info-label">学校地址</span>
             <span class="info-value" id="displaySchoolAddress">-</span>
             <button class="copy-btn" data-target="displaySchoolAddress" title="复制">📋</button>
           </div>
-          
+
           <div class="info-row">
             <span class="info-label">学校电话</span>
             <span class="info-value" id="displaySchoolPhone">-</span>
             <button class="copy-btn" data-target="displaySchoolPhone" title="复制">📋</button>
+          </div>
+
+          <div class="form-group mt-md">
+            <label class="form-label">学校校徽 (可选)</label>
+            <input type="file" id="schoolLogoInput" accept="image/*" class="form-control">
+            <div id="logoPreviewContainer" class="logo-preview-container hidden">
+              <img id="schoolLogoPreview" class="logo-preview">
+              <button id="removeLogoBtn" class="btn-icon" title="移除">×</button>
+            </div>
           </div>
         </div>
 
@@ -110,7 +150,7 @@
           <div class="card-header">
             <h2><span class="icon">📚</span> 添加课程</h2>
           </div>
-          
+
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">学期</label>
@@ -121,12 +161,12 @@
               <input type="text" id="courseCode" class="form-control" placeholder="例如: ENG101">
             </div>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">课程名称 *</label>
             <input type="text" id="courseName" class="form-control" placeholder="例如: English 9">
           </div>
-          
+
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">成绩</label>
@@ -137,24 +177,22 @@
               <input type="number" id="creditsInput" class="form-control" value="1.0" min="0.5" max="5" step="0.5">
             </div>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">课程级别</label>
             <select id="levelSelect" class="form-control"></select>
           </div>
-          
+
           <div class="btn-group mt-md">
             <button id="addCourseBtn" class="btn btn-primary">
               ➕ 添加课程
             </button>
-            <button id="removeCourseBtn" class="btn btn-secondary">
-              ➖ 删除最后一个
-            </button>
-          </div>
-          
-          <div class="mt-md">
-            <button id="generateSampleBtn" class="btn btn-secondary btn-full">
+
+            <button id="generateSampleBtn" class="btn btn-secondary btn-full" style="flex: 1;">
               🎲 生成示例课程
+            </button>
+            <button id="clearCoursesBtn" class="btn btn-danger btn-full" style="flex: 1;">
+              🗑️ 清空课程
             </button>
           </div>
 
@@ -189,15 +227,18 @@
           <div class="card-header">
             <h2><span class="icon">📄</span> 成绩单预览</h2>
             <button id="downloadPdfBtn" class="btn btn-success">
-              📄 下载 PDF
+              📄 Download PDF
             </button>
           </div>
 
           <!-- Transcript Preview -->
           <div class="transcript-preview" id="transcriptPreview">
+            <!-- Watermark -->
+            <div class="watermark" id="schoolWatermark"></div>
             <div class="transcript-inner">
               <!-- School Header -->
               <div class="transcript-header">
+                <img id="previewSchoolLogo" class="school-logo hidden" alt="School Logo">
                 <h2 id="previewSchoolName">School Name</h2>
                 <p id="previewSchoolAddress">School Address</p>
                 <p>Tel: <span id="previewSchoolPhone">-</span></p>
@@ -206,10 +247,14 @@
 
               <!-- Student Information -->
               <div class="transcript-section">
-                <h3>Student Information / 学生信息</h3>
+                <h3>Student Information</h3>
                 <div class="transcript-grid">
                   <div class="transcript-row">
-                    <span class="transcript-label">Name / 姓名:</span>
+                    <span class="transcript-label">Student ID:</span>
+                    <span class="transcript-value" id="previewStudentId">-</span>
+                  </div>
+                  <div class="transcript-row">
+                    <span class="transcript-label">Name:</span>
                     <span class="transcript-value" id="previewStudentName">-</span>
                   </div>
                   <div class="transcript-row">
@@ -217,7 +262,7 @@
                     <span class="transcript-value" id="previewStudentDob">-</span>
                   </div>
                   <div class="transcript-row">
-                    <span class="transcript-label">Address / 地址:</span>
+                    <span class="transcript-label">Address:</span>
                     <span class="transcript-value" id="previewStudentAddress">-</span>
                   </div>
                   <div class="transcript-row">
@@ -229,7 +274,7 @@
 
               <!-- Academic Summary -->
               <div class="transcript-section">
-                <h3>Academic Summary / 学业概况</h3>
+                <h3>Academic Summary</h3>
                 <div class="transcript-grid">
                   <div class="transcript-row">
                     <span class="transcript-label">Enrollment Status:</span>
@@ -260,7 +305,7 @@
 
               <!-- Course History -->
               <div class="transcript-section">
-                <h3>Course History / 课程记录</h3>
+                <h3>Course History</h3>
                 <table class="transcript-table">
                   <thead>
                     <tr>
@@ -282,35 +327,42 @@
 
               <!-- Credit Summary -->
               <div class="transcript-section">
-                <h3>Credit Summary / 学分统计</h3>
+                <h3>Credit Summary</h3>
                 <div class="credit-summary">
                   <div class="credit-item">
                     <span class="label">English</span>
-                    <span class="value"><span id="credits-english-earned">0</span> / <span id="credits-english-required">4</span></span>
+                    <span class="value"><span id="credits-english-earned">0</span> / <span
+                        id="credits-english-required">4</span></span>
                   </div>
                   <div class="credit-item">
                     <span class="label">Math</span>
-                    <span class="value"><span id="credits-math-earned">0</span> / <span id="credits-math-required">4</span></span>
+                    <span class="value"><span id="credits-math-earned">0</span> / <span
+                        id="credits-math-required">4</span></span>
                   </div>
                   <div class="credit-item">
                     <span class="label">Science</span>
-                    <span class="value"><span id="credits-science-earned">0</span> / <span id="credits-science-required">3</span></span>
+                    <span class="value"><span id="credits-science-earned">0</span> / <span
+                        id="credits-science-required">3</span></span>
                   </div>
                   <div class="credit-item">
                     <span class="label">Social Studies</span>
-                    <span class="value"><span id="credits-socialStudies-earned">0</span> / <span id="credits-socialStudies-required">3</span></span>
+                    <span class="value"><span id="credits-socialStudies-earned">0</span> / <span
+                        id="credits-socialStudies-required">3</span></span>
                   </div>
                   <div class="credit-item">
                     <span class="label">Foreign Lang.</span>
-                    <span class="value"><span id="credits-foreignLanguage-earned">0</span> / <span id="credits-foreignLanguage-required">2</span></span>
+                    <span class="value"><span id="credits-foreignLanguage-earned">0</span> / <span
+                        id="credits-foreignLanguage-required">2</span></span>
                   </div>
                   <div class="credit-item">
                     <span class="label">Electives</span>
-                    <span class="value"><span id="credits-electives-earned">0</span> / <span id="credits-electives-required">6</span></span>
+                    <span class="value"><span id="credits-electives-earned">0</span> / <span
+                        id="credits-electives-required">6</span></span>
                   </div>
                   <div class="credit-item" style="grid-column: span 2; background: #e8e8e8;">
                     <span class="label">TOTAL</span>
-                    <span class="value" style="font-size: 1rem;"><span id="credits-total-earned">0</span> / <span id="credits-total-required">22</span></span>
+                    <span class="value" style="font-size: 1rem;"><span id="credits-total-earned">0</span> / <span
+                        id="credits-total-required">22</span></span>
                   </div>
                 </div>
               </div>
@@ -318,8 +370,10 @@
               <!-- Footer -->
               <div class="transcript-footer">
                 <p>This is an official transcript of <span id="previewSchoolNameFooter">-</span>.</p>
-                <p>Print Date: <span id="previewPrintDate">-</span> | Effective Date: <span id="previewEffectiveDate">-</span></p>
-                <p class="disclaimer">⚠️ This document is generated for educational and testing purposes only.</p>
+                <p>Print Date: <span id="previewPrintDate">-</span> | Effective Date: <span
+                    id="previewEffectiveDate">-</span></p>
+                <p class="verification-note">For verification, please contact the Registrar's Office at: <span
+                    id="previewRegistrarPhone">-</span></p>
               </div>
             </div>
           </div>
@@ -343,4 +397,5 @@
   <script src="js/pdf-export.js"></script>
   <script src="js/app.js"></script>
 </body>
+
 </html>

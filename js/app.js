@@ -8,6 +8,9 @@ const App = {
     currentSchool: null,
     currentTranscript: null,
     courses: [],
+    availableSchools: [],
+    schoolLogo: null,
+    isEditMode: false,
 
     // Initialize the application
     async init() {
@@ -114,11 +117,7 @@ const App = {
             addCourseBtn.addEventListener('click', () => this.addCourse());
         }
 
-        // Remove last course button
-        const removeCourseBtn = document.getElementById('removeCourseBtn');
-        if (removeCourseBtn) {
-            removeCourseBtn.addEventListener('click', () => this.removeLastCourse());
-        }
+
 
         // Download PDF button
         const downloadPdfBtn = document.getElementById('downloadPdfBtn');
@@ -132,10 +131,75 @@ const App = {
             generateSampleBtn.addEventListener('click', () => this.generateSampleCourses());
         }
 
+        // Clear courses button
+        const clearCoursesBtn = document.getElementById('clearCoursesBtn');
+        if (clearCoursesBtn) {
+            clearCoursesBtn.addEventListener('click', () => this.clearAllCourses());
+        }
+
+        // Course name input - Auto-fill code & Autocomplete logic
+        const courseNameInput = document.getElementById('courseName');
+        const courseCodeInput = document.getElementById('courseCode');
+        if (courseNameInput && courseCodeInput) {
+            // Auto-generate code when course name changes
+            courseNameInput.addEventListener('blur', (e) => {
+                if (!courseCodeInput.value && e.target.value) {
+                    courseCodeInput.value = TranscriptGenerator.generateCourseCodeByName(e.target.value);
+                }
+            });
+
+            // Simple autocomplete (datalist)
+            courseNameInput.setAttribute('list', 'courseNameList');
+            let datalist = document.getElementById('courseNameList');
+            if (!datalist) {
+                datalist = document.createElement('datalist');
+                datalist.id = 'courseNameList';
+                document.body.appendChild(datalist);
+
+                // Populate datalist
+                const allCourses = TranscriptGenerator.getAllCourseNames();
+                allCourses.forEach(course => {
+                    const option = document.createElement('option');
+                    option.value = course;
+                    datalist.appendChild(option);
+                });
+            }
+        }
+
         // Copy buttons
         document.querySelectorAll('.copy-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.copyToClipboard(e.target));
         });
+
+        // School selector
+        const schoolSelect = document.getElementById('schoolSelect');
+        if (schoolSelect) {
+            schoolSelect.addEventListener('change', (e) => this.selectSchool(e.target.value));
+        }
+
+        // School logo upload
+        const logoInput = document.getElementById('schoolLogoInput');
+        if (logoInput) {
+            logoInput.addEventListener('change', (e) => this.handleLogoUpload(e));
+        }
+
+        // Remove logo button
+        const removeLogoBtn = document.getElementById('removeLogoBtn');
+        if (removeLogoBtn) {
+            removeLogoBtn.addEventListener('click', () => this.removeLogo());
+        }
+
+        // Edit student info button
+        const editStudentBtn = document.getElementById('editStudentBtn');
+        if (editStudentBtn) {
+            editStudentBtn.addEventListener('click', () => this.toggleEditMode());
+        }
+
+        // Enrollment status change
+        const enrollmentSelect = document.getElementById('enrollmentStatusSelect');
+        if (enrollmentSelect) {
+            enrollmentSelect.addEventListener('change', () => this.updateTranscriptPreview());
+        }
     },
 
     // Generate new address and match school
@@ -162,6 +226,9 @@ const App = {
         // Step 2: Generate address matching the school's location
         if (school) {
             this.currentAddress = AddressGenerator.generateForSchool(school);
+            // Add student ID
+            this.currentAddress.studentId = AddressGenerator.generateStudentId();
+
             this.currentSchool = {
                 name: school.name,
                 address: school.address,
@@ -171,10 +238,16 @@ const App = {
                 phone: school.phone,
                 fullAddress: `${school.address}, ${school.city}, ${school.state} ${school.zip}`
             };
+
+            // Get multiple schools for selector
+            this.availableSchools = SchoolMatcher.matchMultiple(this.currentAddress, 5);
+            this.updateSchoolSelector();
         } else {
             // Fallback if no schools available
             this.currentAddress = AddressGenerator.generate(selectedState || null);
+            this.currentAddress.studentId = AddressGenerator.generateStudentId();
             this.currentSchool = SchoolMatcher.match(this.currentAddress);
+            this.availableSchools = [];
         }
 
         // Update UI
@@ -191,11 +264,44 @@ const App = {
         }
     },
 
+    // Update school selector dropdown
+    updateSchoolSelector() {
+        const select = document.getElementById('schoolSelect');
+        if (!select) return;
+
+        select.innerHTML = '';
+
+        if (this.availableSchools.length === 0) {
+            select.innerHTML = '<option value="">无可用学校</option>';
+            return;
+        }
+
+        this.availableSchools.forEach((school, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `${school.name} (${school.city}, ${school.state})`;
+            if (index === 0) {
+                option.textContent += ' ★ 最佳匹配';
+            }
+            select.appendChild(option);
+        });
+    },
+
+    // Select a school from dropdown
+    selectSchool(index) {
+        if (index === '' || !this.availableSchools[index]) return;
+
+        this.currentSchool = this.availableSchools[index];
+        this.updateSchoolDisplay();
+        this.updateTranscriptPreview();
+    },
+
     // Update address display
     updateAddressDisplay() {
         if (!this.currentAddress) return;
 
         const fields = {
+            'displayStudentId': this.currentAddress.studentId || '-',
             'displayName': this.currentAddress.name,
             'displayGender': this.currentAddress.gender === 'male' ? '男 (Male)' : '女 (Female)',
             'displayAddress': this.currentAddress.fullAddress,
@@ -228,15 +334,20 @@ const App = {
     // Add a course
     addCourse() {
         const term = document.getElementById('termSelect')?.value;
-        const code = document.getElementById('courseCode')?.value || this.generateCourseCode();
         const name = document.getElementById('courseName')?.value;
         const grade = document.getElementById('gradeSelect')?.value;
         const credits = parseFloat(document.getElementById('creditsInput')?.value) || 1.0;
         const level = document.getElementById('levelSelect')?.value;
 
         if (!name) {
-            alert('请输入课程名称 (Please enter course name)');
+            alert('Please enter course name');
             return;
+        }
+
+        // Auto-generate course code based on course name
+        let code = document.getElementById('courseCode')?.value;
+        if (!code) {
+            code = TranscriptGenerator.generateCourseCodeByName(name);
         }
 
         const course = { term, code, name, grade, credits, level };
@@ -259,18 +370,36 @@ const App = {
         return `${prefix}${number}`;
     },
 
-    // Remove last course
-    removeLastCourse() {
-        if (this.courses.length > 0) {
-            this.courses.pop();
-            this.updateCourseList();
-            this.updateTranscriptPreview();
+
+
+    // Generate sample courses based on birth date
+    generateSampleCourses() {
+        // Calculate start year from birth date
+        let startYear = new Date().getFullYear() - 3; // Default
+
+        if (this.currentAddress && this.currentAddress.dateOfBirth) {
+            startYear = TranscriptGenerator.calculateStartYear(this.currentAddress.dateOfBirth);
         }
+
+        // Make sure we don't generate courses in the future
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth();
+        const maxYear = currentMonth >= 7 ? currentYear : currentYear - 1;
+
+        // Adjust years if needed
+        const numYears = Math.min(4, maxYear - startYear + 1);
+        if (numYears <= 0) {
+            startYear = maxYear - 3;
+        }
+
+        this.courses = TranscriptGenerator.generateSampleCourses(startYear, Math.max(1, numYears));
+        this.updateCourseList();
+        this.updateTranscriptPreview();
     },
 
-    // Generate sample courses
-    generateSampleCourses() {
-        this.courses = TranscriptGenerator.generateSampleCourses(2021, 4);
+    // Clear all courses
+    clearAllCourses() {
+        this.courses = [];
         this.updateCourseList();
         this.updateTranscriptPreview();
     },
@@ -313,11 +442,19 @@ const App = {
     updateTranscriptPreview() {
         if (!this.currentAddress || !this.currentSchool) return;
 
-        // Create transcript data
+        // Get enrollment status
+        const enrollmentStatus = document.getElementById('enrollmentStatusSelect')?.value || 'Active';
+
+        // Create transcript data with options
         this.currentTranscript = TranscriptGenerator.createTranscript(
             this.currentAddress,
             this.currentSchool,
-            this.courses
+            this.courses,
+            {
+                enrollmentStatus: enrollmentStatus,
+                schoolLogo: this.schoolLogo,
+                watermark: this.currentSchool.name
+            }
         );
 
         // Update preview elements
@@ -327,8 +464,28 @@ const App = {
         this.setPreviewText('previewSchoolName', t.school.name);
         this.setPreviewText('previewSchoolAddress', t.school.address);
         this.setPreviewText('previewSchoolPhone', t.school.phone);
+        this.setPreviewText('previewSchoolNameFooter', t.school.name);
+        this.setPreviewText('previewRegistrarPhone', t.school.phone);
+
+        // School logo
+        const logoEl = document.getElementById('previewSchoolLogo');
+        if (logoEl) {
+            if (this.schoolLogo) {
+                logoEl.src = this.schoolLogo;
+                logoEl.classList.remove('hidden');
+            } else {
+                logoEl.classList.add('hidden');
+            }
+        }
+
+        // Watermark
+        const watermarkEl = document.getElementById('schoolWatermark');
+        if (watermarkEl) {
+            watermarkEl.textContent = t.watermark;
+        }
 
         // Student info
+        this.setPreviewText('previewStudentId', t.student.studentId);
         this.setPreviewText('previewStudentName', t.student.name);
         this.setPreviewText('previewStudentAddress', t.student.address);
         this.setPreviewText('previewStudentDob', t.student.dateOfBirth);
@@ -427,6 +584,109 @@ const App = {
         const filename = `Transcript_${studentName}_${schoolName}.pdf`;
 
         await PDFExporter.exportToPDF('transcriptPreview', filename);
+    },
+
+    // Handle logo upload
+    handleLogoUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('请上传图片文件 (Please upload an image file)');
+            return;
+        }
+
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('图片大小不能超过2MB (Image size should not exceed 2MB)');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.schoolLogo = e.target.result;
+
+            // Show preview
+            const preview = document.getElementById('schoolLogoPreview');
+            const container = document.getElementById('logoPreviewContainer');
+            if (preview && container) {
+                preview.src = this.schoolLogo;
+                container.classList.remove('hidden');
+            }
+
+            this.updateTranscriptPreview();
+        };
+        reader.readAsDataURL(file);
+    },
+
+    // Remove logo
+    removeLogo() {
+        this.schoolLogo = null;
+
+        const input = document.getElementById('schoolLogoInput');
+        const container = document.getElementById('logoPreviewContainer');
+
+        if (input) input.value = '';
+        if (container) container.classList.add('hidden');
+
+        this.updateTranscriptPreview();
+    },
+
+    // Toggle edit mode for student info
+    toggleEditMode() {
+        this.isEditMode = !this.isEditMode;
+        const btn = document.getElementById('editStudentBtn');
+
+        const editableFields = [
+            { display: 'displayName', edit: 'editName', key: 'name' },
+            { display: 'displayDob', edit: 'editDob', key: 'dateOfBirth' },
+            { display: 'displayAddress', edit: 'editAddress', key: 'fullAddress' },
+            { display: 'displayPhone', edit: 'editPhone', key: 'phone' }
+        ];
+
+        if (this.isEditMode) {
+            // Enter edit mode
+            if (btn) btn.textContent = '💾 保存';
+
+            editableFields.forEach(field => {
+                const displayEl = document.getElementById(field.display);
+                const editEl = document.getElementById(field.edit);
+                if (displayEl && editEl) {
+                    editEl.value = displayEl.textContent;
+                    displayEl.classList.add('hidden');
+                    editEl.classList.remove('hidden');
+                }
+            });
+        } else {
+            // Save and exit edit mode
+            if (btn) btn.textContent = '✏️ 编辑';
+
+            editableFields.forEach(field => {
+                const displayEl = document.getElementById(field.display);
+                const editEl = document.getElementById(field.edit);
+                if (displayEl && editEl) {
+                    const newValue = editEl.value.trim();
+                    if (newValue) {
+                        displayEl.textContent = newValue;
+                        // Update currentAddress
+                        if (field.key === 'name') {
+                            this.currentAddress.name = newValue;
+                        } else if (field.key === 'dateOfBirth') {
+                            this.currentAddress.dateOfBirth = newValue;
+                        } else if (field.key === 'fullAddress') {
+                            this.currentAddress.fullAddress = newValue;
+                        } else if (field.key === 'phone') {
+                            this.currentAddress.phone = newValue;
+                        }
+                    }
+                    displayEl.classList.remove('hidden');
+                    editEl.classList.add('hidden');
+                }
+            });
+
+            this.updateTranscriptPreview();
+        }
     }
 };
 

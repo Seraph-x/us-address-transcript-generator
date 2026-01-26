@@ -7,14 +7,53 @@ const TranscriptGenerator = {
     // Semester options from 2020 to 2030
     semesters: [],
 
-    // Course templates
+    // Course templates - Expanded with more common courses
     courseTemplates: {
-        english: ['English 9', 'English 10', 'English 11', 'English 12', 'AP English Language', 'AP English Literature', 'Honors English'],
-        math: ['Algebra I', 'Algebra II', 'Geometry', 'Pre-Calculus', 'AP Calculus AB', 'AP Calculus BC', 'AP Statistics', 'Honors Geometry'],
-        science: ['Biology', 'Chemistry', 'Physics', 'AP Biology', 'AP Chemistry', 'AP Physics 1', 'AP Physics C', 'Honors Chemistry'],
-        socialStudies: ['World History', 'US History', 'AP US History', 'AP World History', 'Government', 'AP Government', 'Economics', 'AP Economics'],
-        foreignLanguage: ['Spanish I', 'Spanish II', 'Spanish III', 'AP Spanish', 'French I', 'French II', 'French III', 'Chinese I', 'Chinese II', 'AP Chinese'],
-        electives: ['Art', 'Music', 'Band', 'Orchestra', 'Choir', 'Drama', 'Computer Science', 'AP Computer Science', 'Physical Education', 'Health']
+        english: [
+            'English 9', 'English 10', 'English 11', 'English 12',
+            'AP English Language', 'AP English Literature', 'Honors English',
+            'Creative Writing', 'Journalism', 'Speech and Debate',
+            'IB English A', 'IB English B', 'World Literature'
+        ],
+        math: [
+            'Algebra I', 'Algebra II', 'Geometry', 'Pre-Calculus',
+            'AP Calculus AB', 'AP Calculus BC', 'AP Statistics',
+            'Honors Geometry', 'Trigonometry', 'Discrete Mathematics',
+            'IB Mathematics SL', 'IB Mathematics HL', 'Linear Algebra',
+            'Multivariable Calculus', 'Honors Algebra II'
+        ],
+        science: [
+            'Biology', 'Chemistry', 'Physics', 'AP Biology', 'AP Chemistry',
+            'AP Physics 1', 'AP Physics 2', 'AP Physics C: Mechanics',
+            'Honors Chemistry', 'Environmental Science', 'AP Environmental Science',
+            'Anatomy and Physiology', 'Earth Science', 'Astronomy',
+            'IB Biology SL', 'IB Biology HL', 'IB Chemistry SL', 'IB Physics SL',
+            'Marine Biology', 'Forensic Science'
+        ],
+        socialStudies: [
+            'World History', 'US History', 'AP US History', 'AP World History',
+            'Government', 'AP Government', 'Economics', 'AP Economics',
+            'Psychology', 'AP Psychology', 'Sociology', 'Geography',
+            'IB History SL', 'IB History HL', 'Civics', 'Current Events',
+            'AP Human Geography', 'Philosophy'
+        ],
+        foreignLanguage: [
+            'Spanish I', 'Spanish II', 'Spanish III', 'Spanish IV', 'AP Spanish',
+            'French I', 'French II', 'French III', 'AP French',
+            'Chinese I', 'Chinese II', 'Chinese III', 'AP Chinese',
+            'German I', 'German II', 'German III', 'Latin I', 'Latin II',
+            'Japanese I', 'Japanese II', 'Italian I', 'Italian II',
+            'IB Spanish SL', 'IB French SL', 'IB Mandarin SL'
+        ],
+        electives: [
+            'Art', 'Music', 'Band', 'Orchestra', 'Choir', 'Drama', 'Theater Arts',
+            'Computer Science', 'AP Computer Science A', 'AP Computer Science Principles',
+            'Physical Education', 'Health', 'Photography', 'Film Studies',
+            'Culinary Arts', 'Wood Shop', 'Automotive Technology',
+            'Business', 'Accounting', 'Marketing', 'Graphic Design',
+            'Robotics', 'Engineering', 'Architecture', 'Fashion Design',
+            'IB Visual Arts', 'IB Music', 'IB Computer Science'
+        ]
     },
 
     grades: ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'F'],
@@ -26,8 +65,9 @@ const TranscriptGenerator = {
         'F': 0.0
     },
 
-    courseLevels: ['Standard', 'Honors', 'AP'],
-    levelWeights: { 'Standard': 0, 'Honors': 0.5, 'AP': 1.0 },
+    // Course levels - Added IB
+    courseLevels: ['Standard', 'Honors', 'AP', 'IB'],
+    levelWeights: { 'Standard': 0, 'Honors': 0.5, 'AP': 1.0, 'IB': 1.0 },
 
     // Initialize semesters
     init() {
@@ -170,6 +210,37 @@ const TranscriptGenerator = {
         return `${prefix}${number}`;
     },
 
+    // Generate course code by course name
+    generateCourseCodeByName(courseName) {
+        const category = this.getCourseCategory(courseName);
+        return this.generateCourseCode(category);
+    },
+
+    // Get all available course names for autocomplete
+    getAllCourseNames() {
+        const allCourses = [];
+        Object.values(this.courseTemplates).forEach(courses => {
+            courses.forEach(course => allCourses.push(course));
+        });
+        return allCourses;
+    },
+
+    // Calculate start year based on birth date
+    calculateStartYear(dateOfBirth) {
+        // Parse date (MM/DD/YYYY format)
+        const parts = dateOfBirth.split('/');
+        if (parts.length !== 3) {
+            return new Date().getFullYear() - 3; // Default to current year - 3
+        }
+
+        const birthYear = parseInt(parts[2]);
+        // High school starts at age 14 (9th grade)
+        // So start year = birth year + 14
+        const startYear = birthYear + 14;
+
+        return startYear;
+    },
+
     // Generate random grade (weighted towards good grades)
     generateRandomGrade() {
         const rand = Math.random();
@@ -196,26 +267,30 @@ const TranscriptGenerator = {
     },
 
     // Create transcript data object
-    createTranscript(studentInfo, schoolInfo, courses = []) {
+    createTranscript(studentInfo, schoolInfo, courses = [], options = {}) {
         const today = new Date();
+        const effectiveDate = new Date();
+        effectiveDate.setMonth(effectiveDate.getMonth() + 1); // Extend by one month
 
         return {
             student: {
                 name: studentInfo.name || '',
                 address: studentInfo.fullAddress || '',
                 dateOfBirth: studentInfo.dateOfBirth || '',
-                phone: studentInfo.phone || ''
+                phone: studentInfo.phone || '',
+                studentId: studentInfo.studentId || AddressGenerator.generateStudentId()
             },
             school: {
                 name: schoolInfo.name || '',
                 address: schoolInfo.fullAddress || '',
-                phone: schoolInfo.phone || ''
+                phone: schoolInfo.phone || '',
+                logo: options.schoolLogo || null
             },
             academic: {
-                enrollmentStatus: 'Active',
-                gradeLevel: '12',
-                entryDate: '08/15/2021',
-                expectedGraduation: '06/15/2025',
+                enrollmentStatus: options.enrollmentStatus || 'Active',
+                gradeLevel: options.gradeLevel || '12',
+                entryDate: options.entryDate || '08/15/2021',
+                expectedGraduation: options.expectedGraduation || '06/15/2025',
                 gpa: this.calculateGPA(courses),
                 weightedGpa: this.calculateGPA(courses, true),
                 classRank: this.generateClassRank(),
@@ -224,7 +299,8 @@ const TranscriptGenerator = {
             courses: courses,
             creditSummary: this.calculateCreditSummary(courses),
             printDate: today.toLocaleDateString('en-US'),
-            effectiveDate: today.toLocaleDateString('en-US')
+            effectiveDate: effectiveDate.toLocaleDateString('en-US'),
+            watermark: options.watermark || schoolInfo.name || ''
         };
     },
 
