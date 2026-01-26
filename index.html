@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="生成真实的美国地址和高中成绩单，自动匹配附近的公立高中。支持PDF导出。">
+  <title>美国地址 & 高中成绩单生成器 | US Address & Transcript Generator</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="app-header">
+      <h1>🇺🇸 美国地址 & 高中成绩单生成器</h1>
+      <p>生成真实格式的美国地址，自动匹配附近公立高中，一键生成成绩单 PDF</p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-grid">
+      <!-- Left Panel: Address Generator -->
+      <div class="left-panel">
+        <!-- State Selection -->
+        <div class="card mb-lg">
+          <div class="card-header">
+            <h2><span class="icon">🗺️</span> 选择州</h2>
+          </div>
+          <div class="form-group">
+            <select id="stateSelect" class="form-control">
+              <option value="">随机选择州 (Random State)</option>
+            </select>
+          </div>
+          <button id="generateBtn" class="btn btn-primary btn-full">
+            ✨ 生成地址信息
+          </button>
+        </div>
+
+        <!-- Generated Address -->
+        <div class="card address-card mb-lg">
+          <div class="card-header">
+            <h2><span class="icon">👤</span> 学生信息</h2>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">姓名</span>
+            <span class="info-value" id="displayName">-</span>
+            <button class="copy-btn" data-target="displayName" title="复制">📋</button>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">性别</span>
+            <span class="info-value" id="displayGender">-</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">出生日期</span>
+            <span class="info-value" id="displayDob">-</span>
+            <button class="copy-btn" data-target="displayDob" title="复制">📋</button>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">地址</span>
+            <span class="info-value" id="displayAddress">-</span>
+            <button class="copy-btn" data-target="displayAddress" title="复制">📋</button>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">电话</span>
+            <span class="info-value" id="displayPhone">-</span>
+            <button class="copy-btn" data-target="displayPhone" title="复制">📋</button>
+          </div>
+        </div>
+
+        <!-- Matched School -->
+        <div class="card school-info mb-lg">
+          <div class="card-header">
+            <h2><span class="icon">🏫</span> 匹配的学校</h2>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">学校名称</span>
+            <span class="info-value" id="displaySchoolName">-</span>
+            <button class="copy-btn" data-target="displaySchoolName" title="复制">📋</button>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">学校地址</span>
+            <span class="info-value" id="displaySchoolAddress">-</span>
+            <button class="copy-btn" data-target="displaySchoolAddress" title="复制">📋</button>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">学校电话</span>
+            <span class="info-value" id="displaySchoolPhone">-</span>
+            <button class="copy-btn" data-target="displaySchoolPhone" title="复制">📋</button>
+          </div>
+        </div>
+
+        <!-- Course Entry -->
+        <div class="card">
+          <div class="card-header">
+            <h2><span class="icon">📚</span> 添加课程</h2>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">学期</label>
+              <select id="termSelect" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">课程代码</label>
+              <input type="text" id="courseCode" class="form-control" placeholder="例如: ENG101">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">课程名称 *</label>
+            <input type="text" id="courseName" class="form-control" placeholder="例如: English 9">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">成绩</label>
+              <select id="gradeSelect" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">学分</label>
+              <input type="number" id="creditsInput" class="form-control" value="1.0" min="0.5" max="5" step="0.5">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">课程级别</label>
+            <select id="levelSelect" class="form-control"></select>
+          </div>
+          
+          <div class="btn-group mt-md">
+            <button id="addCourseBtn" class="btn btn-primary">
+              ➕ 添加课程
+            </button>
+            <button id="removeCourseBtn" class="btn btn-secondary">
+              ➖ 删除最后一个
+            </button>
+          </div>
+          
+          <div class="mt-md">
+            <button id="generateSampleBtn" class="btn btn-secondary btn-full">
+              🎲 生成示例课程
+            </button>
+          </div>
+
+          <!-- Course List -->
+          <div class="course-table-container mt-lg">
+            <h3 class="text-small text-muted mb-sm">当前课程列表</h3>
+            <table class="course-table">
+              <thead>
+                <tr>
+                  <th>学期</th>
+                  <th>代码</th>
+                  <th>课程名</th>
+                  <th>成绩</th>
+                  <th>学分</th>
+                  <th>级别</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="courseListBody">
+                <tr>
+                  <td colspan="7" class="text-center text-muted">暂无课程，请添加</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Transcript Preview -->
+      <div class="right-panel">
+        <div class="card">
+          <div class="card-header">
+            <h2><span class="icon">📄</span> 成绩单预览</h2>
+            <button id="downloadPdfBtn" class="btn btn-success">
+              📄 下载 PDF
+            </button>
+          </div>
+
+          <!-- Transcript Preview -->
+          <div class="transcript-preview" id="transcriptPreview">
+            <div class="transcript-inner">
+              <!-- School Header -->
+              <div class="transcript-header">
+                <h2 id="previewSchoolName">School Name</h2>
+                <p id="previewSchoolAddress">School Address</p>
+                <p>Tel: <span id="previewSchoolPhone">-</span></p>
+                <p class="mt-sm"><strong>OFFICIAL ACADEMIC TRANSCRIPT</strong></p>
+              </div>
+
+              <!-- Student Information -->
+              <div class="transcript-section">
+                <h3>Student Information / 学生信息</h3>
+                <div class="transcript-grid">
+                  <div class="transcript-row">
+                    <span class="transcript-label">Name / 姓名:</span>
+                    <span class="transcript-value" id="previewStudentName">-</span>
+                  </div>
+                  <div class="transcript-row">
+                    <span class="transcript-label">Date of Birth:</span>
+                    <span class="transcript-value" id="previewStudentDob">-</span>
+                  </div>
+                  <div class="transcript-row">
+                    <span class="transcript-label">Address / 地址:</span>
+                    <span class="transcript-value" id="previewStudentAddress">-</span>
+                  </div>
+                  <div class="transcript-row">
+                    <span class="transcript-label">Phone:</span>
+                    <span class="transcript-value" id="previewStudentPhone">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Academic Summary -->
+              <div class="transcript-section">
+                <h3>Academic Summary / 学业概况</h3>
+                <div class="transcript-grid">
+                  <div class="transcript-row">
+                    <span class="transcript-label">Enrollment Status:</span>
+                    <span class="transcript-value" id="previewEnrollmentStatus">Active</span>
+                  </div>
+                  <div class="transcript-row">
+                    <span class="transcript-label">Grade Level:</span>
+                    <span class="transcript-value" id="previewGradeLevel">12</span>
+                  </div>
+                  <div class="transcript-row">
+                    <span class="transcript-label">Cumulative GPA:</span>
+                    <span class="transcript-value" id="previewGpa">0.00</span>
+                  </div>
+                  <div class="transcript-row">
+                    <span class="transcript-label">Weighted GPA:</span>
+                    <span class="transcript-value" id="previewWeightedGpa">0.00</span>
+                  </div>
+                  <div class="transcript-row">
+                    <span class="transcript-label">Class Rank:</span>
+                    <span class="transcript-value" id="previewClassRank">-</span>
+                  </div>
+                  <div class="transcript-row">
+                    <span class="transcript-label">Verification Code:</span>
+                    <span class="transcript-value" id="previewVerificationCode">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Course History -->
+              <div class="transcript-section">
+                <h3>Course History / 课程记录</h3>
+                <table class="transcript-table">
+                  <thead>
+                    <tr>
+                      <th>Term</th>
+                      <th>Code</th>
+                      <th>Course Title</th>
+                      <th>Grade</th>
+                      <th>Credits</th>
+                      <th>Level</th>
+                    </tr>
+                  </thead>
+                  <tbody id="previewCourseBody">
+                    <tr>
+                      <td colspan="6" style="text-align: center; color: #999;">No courses added</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Credit Summary -->
+              <div class="transcript-section">
+                <h3>Credit Summary / 学分统计</h3>
+                <div class="credit-summary">
+                  <div class="credit-item">
+                    <span class="label">English</span>
+                    <span class="value"><span id="credits-english-earned">0</span> / <span id="credits-english-required">4</span></span>
+                  </div>
+                  <div class="credit-item">
+                    <span class="label">Math</span>
+                    <span class="value"><span id="credits-math-earned">0</span> / <span id="credits-math-required">4</span></span>
+                  </div>
+                  <div class="credit-item">
+                    <span class="label">Science</span>
+                    <span class="value"><span id="credits-science-earned">0</span> / <span id="credits-science-required">3</span></span>
+                  </div>
+                  <div class="credit-item">
+                    <span class="label">Social Studies</span>
+                    <span class="value"><span id="credits-socialStudies-earned">0</span> / <span id="credits-socialStudies-required">3</span></span>
+                  </div>
+                  <div class="credit-item">
+                    <span class="label">Foreign Lang.</span>
+                    <span class="value"><span id="credits-foreignLanguage-earned">0</span> / <span id="credits-foreignLanguage-required">2</span></span>
+                  </div>
+                  <div class="credit-item">
+                    <span class="label">Electives</span>
+                    <span class="value"><span id="credits-electives-earned">0</span> / <span id="credits-electives-required">6</span></span>
+                  </div>
+                  <div class="credit-item" style="grid-column: span 2; background: #e8e8e8;">
+                    <span class="label">TOTAL</span>
+                    <span class="value" style="font-size: 1rem;"><span id="credits-total-earned">0</span> / <span id="credits-total-required">22</span></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <div class="transcript-footer">
+                <p>This is an official transcript of <span id="previewSchoolNameFooter">-</span>.</p>
+                <p>Print Date: <span id="previewPrintDate">-</span> | Effective Date: <span id="previewEffectiveDate">-</span></p>
+                <p class="disclaimer">⚠️ This document is generated for educational and testing purposes only.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-header mt-lg">
+      <p class="text-muted text-small">
+        ⚠️ 免责声明：本工具仅供教育和测试目的使用。禁止用于任何非法活动。<br>
+        Disclaimer: For educational and testing purposes only. Prohibited for illegal activities.
+      </p>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/address-generator.js"></script>
+  <script src="js/school-matcher.js"></script>
+  <script src="js/transcript.js"></script>
+  <script src="js/pdf-export.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
