@@ -404,8 +404,17 @@
   </div>
 
   <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script>
+    // Check if config loaded correctly (for GitHub clones)
+    if (typeof APP_CONFIG === 'undefined') {
+      console.error('APP_CONFIG is not defined. Please rename js/config.template.js to js/config.js and add your API key.');
+      window.APP_CONFIG = { GOOGLE_MAPS_API_KEY: '' }; // Fallback
+    }
+  </script>
   <script src="js/theme.js"></script>
   <script src="js/address-generator.js"></script>
+  <script src="js/address-validator.js"></script>
   <script src="js/school-matcher.js"></script>
   <script src="js/transcript.js"></script>
   <script src="js/pdf-export.js"></script>

@@ -1,0 +1,11 @@
+# Local configuration
+js/config.js
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db

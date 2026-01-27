@@ -35,6 +35,9 @@ const App = {
         TranscriptGenerator.init();
         await SchoolMatcher.init();
 
+        // Load residential streets data for address generation
+        await AddressGenerator.loadResidentialStreets();
+
         // Populate state dropdown
         this.populateStateDropdown();
 
@@ -48,7 +51,7 @@ const App = {
         this.bindEvents();
 
         // Generate initial data
-        this.generateAddress();
+        await this.generateAddress();
     },
 
     // Populate state dropdown with US states only
@@ -125,7 +128,7 @@ const App = {
         // Generate address button
         const generateBtn = document.getElementById('generateBtn');
         if (generateBtn) {
-            generateBtn.addEventListener('click', () => this.generateAddress());
+            generateBtn.addEventListener('click', async () => await this.generateAddress());
         }
 
         // Add course button
@@ -231,68 +234,91 @@ const App = {
     },
 
     // Generate new address and match school
-    // NEW: Reverse matching - select school first, then generate matching address
-    generateAddress() {
+    // Uses Google Geocoding API to validate addresses are precise (ROOFTOP)
+    async generateAddress() {
         const stateSelect = document.getElementById('stateSelect');
         const selectedState = stateSelect ? stateSelect.value : null;
+        const generateBtn = document.getElementById('generateBtn');
 
-        // Step 1: Select a school first (by state or random)
-        let school = null;
-        if (selectedState) {
-            // Get schools from selected state
-            const stateSchools = SchoolMatcher.getSchoolsByState(selectedState);
-            if (stateSchools.length > 0) {
-                school = stateSchools[Math.floor(Math.random() * stateSchools.length)];
+        // Show loading state
+        if (generateBtn) {
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '⏳ 验证地址中...';
+        }
+
+        try {
+            // Step 1: Select a school first (by state or random)
+            let school = null;
+            if (selectedState) {
+                // Get schools from selected state
+                const stateSchools = SchoolMatcher.getSchoolsByState(selectedState);
+                if (stateSchools.length > 0) {
+                    school = stateSchools[Math.floor(Math.random() * stateSchools.length)];
+                }
             }
-        }
 
-        // Fallback: get random school from all available
-        if (!school && SchoolMatcher.schools.length > 0) {
-            school = SchoolMatcher.schools[Math.floor(Math.random() * SchoolMatcher.schools.length)];
-        }
+            // Fallback: get random school from all available
+            if (!school && SchoolMatcher.schools.length > 0) {
+                school = SchoolMatcher.schools[Math.floor(Math.random() * SchoolMatcher.schools.length)];
+            }
 
-        // Step 2: Generate address matching the school's location
-        if (school) {
-            this.currentAddress = AddressGenerator.generateForSchool(school);
-            // Add student ID
-            this.currentAddress.studentId = AddressGenerator.generateStudentId();
+            // Step 2: Generate and validate address using Google Geocoding API
+            if (school) {
+                // Use AddressValidator to get a precise address
+                this.currentAddress = await AddressValidator.generateValidatedAddress(school, 8);
+                // Add student ID
+                this.currentAddress.studentId = AddressGenerator.generateStudentId();
 
-            this.currentSchool = {
-                name: school.name,
-                address: school.address,
-                city: school.city,
-                state: school.state,
-                zip: school.zip,
-                phone: school.phone,
-                fullAddress: `${school.address}, ${school.city}, ${school.state} ${school.zip}`
-            };
+                this.currentSchool = {
+                    name: school.name,
+                    address: school.address,
+                    city: school.city,
+                    state: school.state,
+                    zip: school.zip,
+                    phone: school.phone,
+                    fullAddress: `${school.address}, ${school.city}, ${school.state} ${school.zip}`
+                };
 
-            // Get multiple schools for selector
-            this.availableSchools = SchoolMatcher.matchMultiple(this.currentAddress, 5);
-            this.updateSchoolSelector();
-        } else {
-            // Fallback if no schools available
-            this.currentAddress = AddressGenerator.generate(selectedState || null);
-            this.currentAddress.studentId = AddressGenerator.generateStudentId();
-            this.currentSchool = SchoolMatcher.match(this.currentAddress);
-            this.availableSchools = [];
-        }
+                // Get multiple schools for selector
+                this.availableSchools = SchoolMatcher.matchMultiple(this.currentAddress, 5);
+                this.updateSchoolSelector();
+            } else {
+                // Fallback if no schools available
+                this.currentAddress = AddressGenerator.generate(selectedState || null);
+                this.currentAddress.studentId = AddressGenerator.generateStudentId();
+                this.currentSchool = SchoolMatcher.match(this.currentAddress);
+                this.availableSchools = [];
+            }
 
-        // Update UI
-        this.updateAddressDisplay();
-        this.updateSchoolDisplay();
+            // Update UI
+            this.updateAddressDisplay();
+            this.updateSchoolDisplay();
 
-        // Auto-generate principal signature
-        this.generateSignature();
+            // Show validation status
+            if (this.currentAddress.validated) {
+                console.log('✅ Address validated: ROOFTOP precision');
+            } else {
+                console.log('⚠️ Address may not be precise');
+            }
 
-        this.updateTranscriptPreview();
+            // Auto-generate principal signature
+            this.generateSignature();
 
-        // Add animation
-        const addressCard = document.querySelector('.address-card');
-        if (addressCard) {
-            addressCard.classList.remove('animate-in');
-            void addressCard.offsetWidth; // Trigger reflow
-            addressCard.classList.add('animate-in');
+            this.updateTranscriptPreview();
+
+            // Add animation
+            const addressCard = document.querySelector('.address-card');
+            if (addressCard) {
+                addressCard.classList.remove('animate-in');
+                void addressCard.offsetWidth; // Trigger reflow
+                addressCard.classList.add('animate-in');
+            }
+        } finally {
+            // Reset button state
+            if (generateBtn) {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '✨ 生成地址信息';
+            }
         }
     },
 

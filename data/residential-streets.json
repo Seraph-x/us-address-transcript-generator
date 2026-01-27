@@ -1,0 +1,228 @@
+{
+  "streets": {
+    "94116": [
+      {"name": "45th Ave", "min": 100, "max": 600},
+      {"name": "Quintara St", "min": 1400, "max": 2200},
+      {"name": "Taraval St", "min": 1500, "max": 2300},
+      {"name": "Rivera St", "min": 1600, "max": 2400},
+      {"name": "Santiago St", "min": 1500, "max": 2100}
+    ],
+    "94132": [
+      {"name": "Eucalyptus Dr", "min": 100, "max": 500},
+      {"name": "Holloway Ave", "min": 100, "max": 800},
+      {"name": "Garfield St", "min": 100, "max": 600},
+      {"name": "Victoria St", "min": 100, "max": 500},
+      {"name": "Sagamore St", "min": 100, "max": 400}
+    ],
+    "94114": [
+      {"name": "Sanchez St", "min": 100, "max": 900},
+      {"name": "Noe St", "min": 100, "max": 800},
+      {"name": "Castro St", "min": 300, "max": 700},
+      {"name": "Guerrero St", "min": 200, "max": 800},
+      {"name": "Dolores St", "min": 200, "max": 700}
+    ],
+    "94112": [
+      {"name": "Geneva Ave", "min": 100, "max": 800},
+      {"name": "Mission St", "min": 4500, "max": 5500},
+      {"name": "San Jose Ave", "min": 100, "max": 900},
+      {"name": "Persia Ave", "min": 100, "max": 600},
+      {"name": "Russia Ave", "min": 100, "max": 500}
+    ],
+    "90019": [
+      {"name": "Ridgeley Dr", "min": 1200, "max": 1800},
+      {"name": "Longwood Ave", "min": 1300, "max": 1900},
+      {"name": "Victoria Ave", "min": 1400, "max": 2000},
+      {"name": "Citrus Ave", "min": 1200, "max": 1800},
+      {"name": "Lucerne Blvd", "min": 1100, "max": 1700}
+    ],
+    "90028": [
+      {"name": "Vine St", "min": 1200, "max": 1800},
+      {"name": "Cahuenga Blvd", "min": 1300, "max": 1900},
+      {"name": "Ivar Ave", "min": 1400, "max": 2000},
+      {"name": "Wilcox Ave", "min": 1200, "max": 1800},
+      {"name": "Las Palmas Ave", "min": 1300, "max": 1900}
+    ],
+    "90212": [
+      {"name": "Roxbury Dr", "min": 200, "max": 600},
+      {"name": "Reeves Dr", "min": 200, "max": 500},
+      {"name": "Oakhurst Dr", "min": 100, "max": 400},
+      {"name": "Elm Dr", "min": 200, "max": 500},
+      {"name": "Maple Dr", "min": 200, "max": 500}
+    ],
+    "90405": [
+      {"name": "Ocean Park Blvd", "min": 2200, "max": 2800},
+      {"name": "Pearl St", "min": 2100, "max": 2700},
+      {"name": "Hill St", "min": 2000, "max": 2600},
+      {"name": "Bay St", "min": 2100, "max": 2700},
+      {"name": "Marine St", "min": 2200, "max": 2800}
+    ],
+    "92101": [
+      {"name": "Front St", "min": 100, "max": 500},
+      {"name": "Union St", "min": 200, "max": 600},
+      {"name": "State St", "min": 100, "max": 500},
+      {"name": "Columbia St", "min": 200, "max": 600},
+      {"name": "India St", "min": 100, "max": 500}
+    ],
+    "92037": [
+      {"name": "Pearl St", "min": 700, "max": 1200},
+      {"name": "Girard Ave", "min": 800, "max": 1300},
+      {"name": "Silverado St", "min": 600, "max": 1100},
+      {"name": "Draper Ave", "min": 700, "max": 1200},
+      {"name": "Fay Ave", "min": 800, "max": 1300}
+    ],
+    "94301": [
+      {"name": "Cowper St", "min": 100, "max": 600},
+      {"name": "Bryant St", "min": 200, "max": 700},
+      {"name": "Waverley St", "min": 100, "max": 500},
+      {"name": "Ramona St", "min": 200, "max": 600},
+      {"name": "Hamilton Ave", "min": 300, "max": 800}
+    ],
+    "94306": [
+      {"name": "Middlefield Rd", "min": 2800, "max": 3400},
+      {"name": "Ross Rd", "min": 100, "max": 500},
+      {"name": "Greer Rd", "min": 200, "max": 600},
+      {"name": "Matadero Ave", "min": 100, "max": 500},
+      {"name": "Loma Verde Ave", "min": 200, "max": 600}
+    ],
+    "95014": [
+      {"name": "Blaney Ave", "min": 10200, "max": 10800},
+      {"name": "Byrne Ave", "min": 10100, "max": 10700},
+      {"name": "Mann Dr", "min": 10300, "max": 10900},
+      {"name": "Rodrigues Ave", "min": 10200, "max": 10800},
+      {"name": "Torre Ave", "min": 10100, "max": 10700}
+    ],
+    "95129": [
+      {"name": "Bollinger Rd", "min": 1200, "max": 1800},
+      {"name": "Miller Ave", "min": 1300, "max": 1900},
+      {"name": "Bucknall Rd", "min": 1100, "max": 1700},
+      {"name": "Rainbow Dr", "min": 1200, "max": 1800},
+      {"name": "Payne Ave", "min": 1300, "max": 1900}
+    ],
+    "95070": [
+      {"name": "Saratoga Ave", "min": 14200, "max": 14800},
+      {"name": "Fruitvale Ave", "min": 18100, "max": 18700},
+      {"name": "Prospect Rd", "min": 18200, "max": 18800},
+      {"name": "Cox Ave", "min": 18300, "max": 18900},
+      {"name": "Quito Rd", "min": 18100, "max": 18700}
+    ],
+    "10282": [
+      {"name": "Warren St", "min": 50, "max": 200},
+      {"name": "Murray St", "min": 40, "max": 180},
+      {"name": "Greenwich St", "min": 300, "max": 500},
+      {"name": "Reade St", "min": 50, "max": 200},
+      {"name": "Duane St", "min": 100, "max": 300}
+    ],
+    "10468": [
+      {"name": "Grand Concourse", "min": 2800, "max": 3400},
+      {"name": "Jerome Ave", "min": 2700, "max": 3300},
+      {"name": "University Ave", "min": 2600, "max": 3200},
+      {"name": "Morris Ave", "min": 2500, "max": 3100},
+      {"name": "Walton Ave", "min": 2700, "max": 3300}
+    ],
+    "11217": [
+      {"name": "Carlton Ave", "min": 100, "max": 400},
+      {"name": "Adelphi St", "min": 100, "max": 350},
+      {"name": "Clermont Ave", "min": 100, "max": 350},
+      {"name": "Vanderbilt Ave", "min": 100, "max": 400},
+      {"name": "Clinton Ave", "min": 100, "max": 350}
+    ],
+    "10023": [
+      {"name": "Amsterdam Ave", "min": 100, "max": 500},
+      {"name": "Columbus Ave", "min": 200, "max": 600},
+      {"name": "Broadway", "min": 2000, "max": 2600},
+      {"name": "Central Park West", "min": 100, "max": 400},
+      {"name": "West End Ave", "min": 200, "max": 600}
+    ],
+    "75075": [
+      {"name": "Jupiter Rd", "min": 2100, "max": 2700},
+      {"name": "Coit Rd", "min": 2200, "max": 2800},
+      {"name": "Independence Pkwy", "min": 2000, "max": 2600},
+      {"name": "Parker Rd", "min": 2100, "max": 2700},
+      {"name": "Alma Dr", "min": 2200, "max": 2800}
+    ],
+    "75093": [
+      {"name": "Parkwood Blvd", "min": 5400, "max": 6000},
+      {"name": "Preston Rd", "min": 5500, "max": 6100},
+      {"name": "Ohio Dr", "min": 5300, "max": 5900},
+      {"name": "Stonewood Dr", "min": 5400, "max": 6000},
+      {"name": "Willow Bend Dr", "min": 5500, "max": 6100}
+    ],
+    "75205": [
+      {"name": "Mockingbird Ln", "min": 4100, "max": 4700},
+      {"name": "Versailles Ave", "min": 4000, "max": 4600},
+      {"name": "Armstrong Ave", "min": 4100, "max": 4700},
+      {"name": "Lakeside Dr", "min": 4200, "max": 4800},
+      {"name": "Drexel Dr", "min": 4000, "max": 4600}
+    ],
+    "78746": [
+      {"name": "Westlake Dr", "min": 3900, "max": 4500},
+      {"name": "Rollingwood Dr", "min": 3800, "max": 4400},
+      {"name": "Redbud Trl", "min": 3700, "max": 4300},
+      {"name": "Toro Canyon Rd", "min": 3900, "max": 4500},
+      {"name": "Stratford Dr", "min": 3800, "max": 4400}
+    ],
+    "33139": [
+      {"name": "Meridian Ave", "min": 1800, "max": 2400},
+      {"name": "Jefferson Ave", "min": 1700, "max": 2300},
+      {"name": "Michigan Ave", "min": 1600, "max": 2200},
+      {"name": "Euclid Ave", "min": 1800, "max": 2400},
+      {"name": "Pennsylvania Ave", "min": 1700, "max": 2300}
+    ],
+    "33146": [
+      {"name": "Granada Blvd", "min": 400, "max": 800},
+      {"name": "Alhambra Cir", "min": 300, "max": 700},
+      {"name": "Sevilla Ave", "min": 400, "max": 800},
+      {"name": "Malaga Ave", "min": 300, "max": 700},
+      {"name": "Valencia Ave", "min": 400, "max": 800}
+    ],
+    "22312": [
+      {"name": "Braddock Rd", "min": 6400, "max": 7000},
+      {"name": "Little River Tpke", "min": 6300, "max": 6900},
+      {"name": "Franconia Rd", "min": 6200, "max": 6800},
+      {"name": "Edsall Rd", "min": 6400, "max": 7000},
+      {"name": "Ravensworth Rd", "min": 6300, "max": 6900}
+    ],
+    "22101": [
+      {"name": "Chain Bridge Rd", "min": 1500, "max": 2100},
+      {"name": "Old Dominion Dr", "min": 1400, "max": 2000},
+      {"name": "Dolley Madison Blvd", "min": 1600, "max": 2200},
+      {"name": "Kirby Rd", "min": 1500, "max": 2100},
+      {"name": "Balls Hill Rd", "min": 1400, "max": 2000}
+    ],
+    "98004": [
+      {"name": "Bellevue Way NE", "min": 10200, "max": 10800},
+      {"name": "108th Ave NE", "min": 100, "max": 500},
+      {"name": "Main St", "min": 200, "max": 600},
+      {"name": "Lake Washington Blvd NE", "min": 100, "max": 500},
+      {"name": "100th Ave NE", "min": 200, "max": 600}
+    ],
+    "60093": [
+      {"name": "Hibbard Rd", "min": 300, "max": 700},
+      {"name": "Cherry St", "min": 400, "max": 800},
+      {"name": "Oak St", "min": 300, "max": 700},
+      {"name": "Elm St", "min": 400, "max": 800},
+      {"name": "Maple St", "min": 300, "max": 700}
+    ],
+    "60201": [
+      {"name": "Orrington Ave", "min": 1500, "max": 2100},
+      {"name": "Hinman Ave", "min": 1400, "max": 2000},
+      {"name": "Judson Ave", "min": 1600, "max": 2200},
+      {"name": "Forest Ave", "min": 1500, "max": 2100},
+      {"name": "Oak Ave", "min": 1400, "max": 2000}
+    ],
+    "02115": [
+      {"name": "Huntington Ave", "min": 70, "max": 200},
+      {"name": "Longwood Ave", "min": 60, "max": 180},
+      {"name": "Brookline Ave", "min": 80, "max": 220},
+      {"name": "Fenwood Rd", "min": 50, "max": 150},
+      {"name": "Parker Hill Ave", "min": 60, "max": 180}
+    ],
+    "80111": [
+      {"name": "Quebec St", "min": 9100, "max": 9700},
+      {"name": "Yosemite St", "min": 9000, "max": 9600},
+      {"name": "Dahlia St", "min": 9200, "max": 9800},
+      {"name": "Holly St", "min": 9100, "max": 9700},
+      {"name": "Jasmine St", "min": 9000, "max": 9600}
+    ]
+  }
+}

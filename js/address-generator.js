@@ -4,6 +4,22 @@
  */
 
 const AddressGenerator = {
+    // Residential streets database - loaded from JSON
+    residentialStreets: null,
+
+    // Load residential streets data
+    async loadResidentialStreets() {
+        if (this.residentialStreets) return;
+        try {
+            const response = await fetch('data/residential-streets.json');
+            const data = await response.json();
+            this.residentialStreets = data.streets;
+        } catch (e) {
+            console.warn('Could not load residential streets data:', e);
+            this.residentialStreets = {};
+        }
+    },
+
     // US States only (no Canada)
     states: {
         'AL': { name: 'Alabama', areaCodes: ['205', '251', '256', '334'] },
@@ -266,6 +282,24 @@ const AddressGenerator = {
         return `${streetNumber} ${streetName} ${streetType}`;
     },
 
+    // Generate residential address using real street data for a specific ZIP
+    generateResidentialAddress(zipCode) {
+        if (this.residentialStreets && this.residentialStreets[zipCode]) {
+            const streets = this.residentialStreets[zipCode];
+            const street = this.random(streets);
+            const streetNumber = this.randomNumber(street.min, street.max);
+            return `${streetNumber} ${street.name}`;
+        }
+        // Fallback to generic residential-style address
+        const streetNumber = this.randomNumber(100, 2000);
+        const residentialStreetNames = [
+            'Oak Ln', 'Maple Dr', 'Cedar Ct', 'Pine Way', 'Elm Pl',
+            'Birch Rd', 'Willow Ln', 'Cherry Dr', 'Walnut Ct', 'Hickory Way',
+            'Magnolia Dr', 'Dogwood Ln', 'Sycamore Ct', 'Chestnut Rd', 'Aspen Way'
+        ];
+        return `${streetNumber} ${this.random(residentialStreetNames)}`;
+    },
+
     generateCity(stateCode) {
         const cities = this.cities[stateCode];
         if (cities && cities.length > 0) {
@@ -333,7 +367,7 @@ const AddressGenerator = {
         };
     },
 
-    // Generate address matching a specific school's location
+    // Generate address matching a specific school's location with real residential streets
     generateForSchool(school) {
         if (!school) {
             return this.generate();
@@ -343,7 +377,8 @@ const AddressGenerator = {
         const stateName = this.states[stateCode]?.name || school.state;
 
         const name = this.generateName();
-        const address = this.generateAddress(stateCode);
+        // Use residential address generation with school's ZIP code
+        const address = this.generateResidentialAddress(school.zip);
         const phone = this.generatePhoneNumber(stateCode);
         const dob = this.generateDateOfBirth();
 
