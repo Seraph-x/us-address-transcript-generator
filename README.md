@@ -23,16 +23,19 @@ US Address & Transcript Generator
 
 ### 2. Cloudflare Pages 部署 (Cloudflare Deployment)
 
-在 Cloudflare Pages 的 **Settings > Builds & deployments > Environment variables** 中：
+**重要：必须同时配置“环境变量”和“构建命令”，否则 API Key 无法生效。**
 
-1.  添加环境变量 `GOOGLE_MAPS_API_KEY`，值为你的 API Key。
-2.  在 **Build settings** 中设置 **Build command** 为：
+1.  **配置环境变量 (Environment Variables)**：
+    *   在 **Settings > Environment variables** 中添加变量 `GOOGLE_MAPS_API_KEY`，值为你的 API Key。
+
+2.  **配置构建命令 (Build Command)**：
+    *   在 **Build settings** 中设置 **Build command** 为：
     ```bash
     cp js/config.template.js js/config.js && sed -i "s/YOUR_API_KEY_HERE/$GOOGLE_MAPS_API_KEY/g" js/config.js
     ```
-3.  **Build output directory** 设置为 `/`。
+    *   **Build output directory** 设置为 `/`。
 
-部署完成后，CI/CD 会自动将环境变量注入到配置文件中。
+*提示：首次创建项目时直接填写以上两项，即可一次部署成功。如果项目已存在，修改配置后需手动 **Retry deployment**。*
 
 ## 🚀 一键部署到 Cloudflare Pages
 
