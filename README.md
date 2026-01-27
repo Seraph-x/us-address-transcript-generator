@@ -6,7 +6,7 @@ US Address & Transcript Generator
 
 ## ✨ 功能特点
 
-- **地址生成** - 生成真实格式的美国地址（仅美国50州）
+- **地址生成** - 生成真实格式的美国地址
 - **高中匹配** - 根据ZIP码自动匹配附近的美国公立高中
 - **成绩单生成** - 学期范围 2020-2030，支持课程管理和GPA计算
 - **PDF导出** - 一键下载专业格式的成绩单PDF
@@ -81,8 +81,8 @@ This tool is for **educational and testing purposes only**. Generated addresses 
 
 This project is based on the following open-source projects. Special thanks to:
 
-- [Real US Address Generator](https://dkanqnkbs.pages.dev/) - 真实美国地址生成器
-- [chatgptuk/Real-US-Address-Generator](https://github.com/chatgptuk/Real-US-Address-Generator) - GitHub 仓库
+- [Real US Address Generator](https://dkanqnkbs.pages.dev/) - 美国高中成绩单生成器
+- [chatgptuk/Real-US-Address-Generator](https://github.com/chatgptuk/Real-US-Address-Generator) - 真实美国地址生成器
 
 ## 📄 License
 
