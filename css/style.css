@@ -1,18 +1,19 @@
 /* 
  * US Address & Transcript Generator
- * Modern Dark Theme with Glassmorphism
+ * Modern Theme with Glassmorphism - Dark/Light Mode Support
  */
 
 /* =====================================================
-   CSS Variables - Design Tokens
+   CSS Variables - Design Tokens (Dark Theme - Default)
    ===================================================== */
 :root {
-  /* Colors */
+  /* Shared Colors */
   --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
 
+  /* Dark Theme Colors */
   --bg-dark: #0f0f1a;
   --bg-card: rgba(30, 30, 50, 0.8);
   --bg-glass: rgba(255, 255, 255, 0.05);
@@ -27,6 +28,11 @@
 
   --shadow-glow: 0 0 40px rgba(102, 126, 234, 0.3);
   --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  /* Background Animation Colors */
+  --bg-gradient-1: rgba(102, 126, 234, 0.15);
+  --bg-gradient-2: rgba(118, 75, 162, 0.15);
+  --bg-gradient-3: rgba(79, 172, 254, 0.1);
 
   /* Typography */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -50,6 +56,54 @@
   --transition-fast: 0.15s ease;
   --transition-normal: 0.3s ease;
   --transition-slow: 0.5s ease;
+}
+
+/* =====================================================
+   Light Theme Variables
+   ===================================================== */
+[data-theme="light"] {
+  --bg-dark: #f0f2f5;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-glass: rgba(0, 0, 0, 0.02);
+  --bg-input: rgba(0, 0, 0, 0.05);
+
+  --text-primary: #1a1a2e;
+  --text-secondary: rgba(26, 26, 46, 0.7);
+  --text-muted: rgba(26, 26, 46, 0.5);
+
+  --border-glass: rgba(0, 0, 0, 0.1);
+  --border-focus: rgba(102, 126, 234, 0.5);
+
+  --shadow-glow: 0 0 40px rgba(102, 126, 234, 0.15);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+  --bg-gradient-1: rgba(102, 126, 234, 0.08);
+  --bg-gradient-2: rgba(118, 75, 162, 0.08);
+  --bg-gradient-3: rgba(79, 172, 254, 0.05);
+}
+
+/* System preference: auto-detect light mode */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg-dark: #f0f2f5;
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --bg-glass: rgba(0, 0, 0, 0.02);
+    --bg-input: rgba(0, 0, 0, 0.05);
+
+    --text-primary: #1a1a2e;
+    --text-secondary: rgba(26, 26, 46, 0.7);
+    --text-muted: rgba(26, 26, 46, 0.5);
+
+    --border-glass: rgba(0, 0, 0, 0.1);
+    --border-focus: rgba(102, 126, 234, 0.5);
+
+    --shadow-glow: 0 0 40px rgba(102, 126, 234, 0.15);
+    --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+    --bg-gradient-1: rgba(102, 126, 234, 0.08);
+    --bg-gradient-2: rgba(118, 75, 162, 0.08);
+    --bg-gradient-3: rgba(79, 172, 254, 0.05);
+  }
 }
 
 /* =====================================================
@@ -86,12 +140,13 @@ body::before {
   right: 0;
   bottom: 0;
   background:
-    radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(79, 172, 254, 0.1) 0%, transparent 40%);
+    radial-gradient(circle at 20% 80%, var(--bg-gradient-1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--bg-gradient-2) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, var(--bg-gradient-3) 0%, transparent 40%);
   pointer-events: none;
   z-index: -1;
   animation: backgroundPulse 15s ease-in-out infinite;
+  transition: background var(--transition-slow);
 }
 
 @keyframes backgroundPulse {
@@ -563,20 +618,78 @@ select.form-control {
   margin-bottom: 10px;
 }
 
-/* Watermark Effect */
-.watermark {
+/* Watermark Effect - Logo Based */
+.watermark-logo {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(-45deg);
-  font-size: 60px;
-  color: rgba(0, 0, 0, 0.08);
-  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  width: 40%;
+  height: 40%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
   z-index: 1;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+}
+
+.watermark-logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  opacity: 0.08;
+  filter: grayscale(100%);
+}
+
+/* Signature Section */
+.signature-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 20px;
+  padding: 15px 30px;
+}
+
+.signature-left {
+  flex: 1;
+  text-align: center;
+  max-width: 200px;
+}
+
+.signature-right {
+  flex: 1;
+  text-align: center;
+  max-width: 150px;
+}
+
+.signature-display {
+  font-family: 'Great Vibes', 'Dancing Script', cursive;
+  font-size: 24px;
+  color: #1a1a2e;
+  min-height: 35px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 2px;
+}
+
+.signature-line {
+  border-bottom: 1px solid #333;
+  margin-bottom: 5px;
+}
+
+.signature-label {
+  font-size: 0.75rem;
+  color: #666;
+  margin: 0;
+}
+
+.signature-date {
+  display: block;
+  font-weight: 500;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #333;
+  margin-bottom: 5px;
 }
 
 /* Verification Note */
@@ -806,6 +919,64 @@ select.form-control {
 
 .mb-lg {
   margin-bottom: var(--spacing-lg);
+}
+
+/* =====================================================
+   Theme Toggle Button
+   ===================================================== */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-card);
+}
+
+.theme-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.theme-toggle-icon {
+  font-size: 1.25rem;
+  transition: transform var(--transition-normal);
+}
+
+.theme-toggle:hover .theme-toggle-icon {
+  transform: rotate(15deg);
+}
+
+.theme-toggle-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color var(--transition-normal);
+}
+
+.theme-toggle:hover .theme-toggle-label {
+  color: var(--text-primary);
+}
+
+/* Responsive: hide label on small screens */
+@media (max-width: 600px) {
+  .theme-toggle {
+    padding: var(--spacing-sm);
+  }
+
+  .theme-toggle-label {
+    display: none;
+  }
 }
 
 /* =====================================================

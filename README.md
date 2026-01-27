@@ -75,6 +75,15 @@ us-address-transcript-generator/
 
 This tool is for **educational and testing purposes only**. Generated addresses and transcripts are fictional data. Prohibited for illegal activities.
 
+## 🙏 致谢 / Acknowledgments
+
+本项目基于以下开源项目开发，特此感谢：
+
+This project is based on the following open-source projects. Special thanks to:
+
+- [Real US Address Generator](https://dkanqnkbs.pages.dev/) - 真实美国地址生成器
+- [chatgptuk/Real-US-Address-Generator](https://github.com/chatgptuk/Real-US-Address-Generator) - GitHub 仓库
+
 ## 📄 License
 
 MIT License

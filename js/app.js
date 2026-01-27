@@ -11,6 +11,23 @@ const App = {
     availableSchools: [],
     schoolLogo: null,
     isEditMode: false,
+    principalSignature: null,
+
+    // Common principal names database
+    principalNames: [
+        'Dr. Robert Anderson', 'Dr. Patricia Williams', 'Dr. Michael Johnson', 'Dr. Jennifer Davis',
+        'Dr. James Wilson', 'Dr. Linda Martinez', 'Dr. William Brown', 'Dr. Elizabeth Garcia',
+        'Dr. David Miller', 'Dr. Barbara Taylor', 'Dr. Richard Thomas', 'Dr. Susan Jackson',
+        'Dr. Joseph White', 'Dr. Margaret Harris', 'Dr. Charles Thompson', 'Dr. Dorothy Robinson',
+        'Dr. Christopher Clark', 'Dr. Nancy Lewis', 'Dr. Daniel Walker', 'Dr. Karen Hall',
+        'Dr. Matthew Allen', 'Dr. Betty Young', 'Dr. Anthony King', 'Dr. Sandra Wright',
+        'Dr. Mark Scott', 'Dr. Ashley Green', 'Dr. Steven Adams', 'Dr. Kimberly Nelson',
+        'Dr. Paul Baker', 'Dr. Emily Carter', 'Dr. Andrew Mitchell', 'Dr. Michelle Roberts',
+        'Dr. Joshua Turner', 'Dr. Amanda Phillips', 'Dr. Kenneth Campbell', 'Dr. Stephanie Parker',
+        'Mrs. Catherine Evans', 'Mr. Brian Edwards', 'Mrs. Rebecca Collins', 'Mr. Kevin Stewart',
+        'Ms. Laura Sanchez', 'Mr. Timothy Morris', 'Mrs. Deborah Rogers', 'Mr. Jason Reed',
+        'Ms. Nicole Cook', 'Mr. Ryan Morgan', 'Mrs. Melissa Bell', 'Mr. Jeffrey Murphy'
+    ],
 
     // Initialize the application
     async init() {
@@ -195,10 +212,21 @@ const App = {
             editStudentBtn.addEventListener('click', () => this.toggleEditMode());
         }
 
-        // Enrollment status change
-        const enrollmentSelect = document.getElementById('enrollmentStatusSelect');
-        if (enrollmentSelect) {
-            enrollmentSelect.addEventListener('change', () => this.updateTranscriptPreview());
+        // Generate signature button
+        const generateSignatureBtn = document.getElementById('generateSignatureBtn');
+        if (generateSignatureBtn) {
+            generateSignatureBtn.addEventListener('click', () => this.generateSignature());
+        }
+
+        // Principal name input - auto update signature on blur
+        const principalNameInput = document.getElementById('principalNameInput');
+        if (principalNameInput) {
+            principalNameInput.addEventListener('blur', () => {
+                if (principalNameInput.value.trim()) {
+                    this.principalSignature = principalNameInput.value.trim();
+                    this.updateSignatureDisplay();
+                }
+            });
         }
     },
 
@@ -253,6 +281,10 @@ const App = {
         // Update UI
         this.updateAddressDisplay();
         this.updateSchoolDisplay();
+
+        // Auto-generate principal signature
+        this.generateSignature();
+
         this.updateTranscriptPreview();
 
         // Add animation
@@ -261,6 +293,36 @@ const App = {
             addressCard.classList.remove('animate-in');
             void addressCard.offsetWidth; // Trigger reflow
             addressCard.classList.add('animate-in');
+        }
+    },
+
+    // Generate random principal signature
+    generateSignature() {
+        const principalNameInput = document.getElementById('principalNameInput');
+
+        // If user has entered a name, use that
+        if (principalNameInput && principalNameInput.value.trim()) {
+            this.principalSignature = principalNameInput.value.trim();
+        } else {
+            // Otherwise, generate a random principal name
+            const randomIndex = Math.floor(Math.random() * this.principalNames.length);
+            this.principalSignature = this.principalNames[randomIndex];
+
+            // Update the input field
+            if (principalNameInput) {
+                principalNameInput.value = this.principalSignature;
+            }
+        }
+
+        this.updateSignatureDisplay();
+        this.updateTranscriptPreview();
+    },
+
+    // Update signature display in transcript
+    updateSignatureDisplay() {
+        const signatureDisplay = document.getElementById('signatureDisplay');
+        if (signatureDisplay && this.principalSignature) {
+            signatureDisplay.textContent = this.principalSignature;
         }
     },
 
@@ -442,18 +504,13 @@ const App = {
     updateTranscriptPreview() {
         if (!this.currentAddress || !this.currentSchool) return;
 
-        // Get enrollment status
-        const enrollmentStatus = document.getElementById('enrollmentStatusSelect')?.value || 'Active';
-
         // Create transcript data with options
         this.currentTranscript = TranscriptGenerator.createTranscript(
             this.currentAddress,
             this.currentSchool,
             this.courses,
             {
-                enrollmentStatus: enrollmentStatus,
-                schoolLogo: this.schoolLogo,
-                watermark: this.currentSchool.name
+                schoolLogo: this.schoolLogo
             }
         );
 
@@ -467,7 +524,7 @@ const App = {
         this.setPreviewText('previewSchoolNameFooter', t.school.name);
         this.setPreviewText('previewRegistrarPhone', t.school.phone);
 
-        // School logo
+        // School logo in header
         const logoEl = document.getElementById('previewSchoolLogo');
         if (logoEl) {
             if (this.schoolLogo) {
@@ -478,10 +535,15 @@ const App = {
             }
         }
 
-        // Watermark
-        const watermarkEl = document.getElementById('schoolWatermark');
-        if (watermarkEl) {
-            watermarkEl.textContent = t.watermark;
+        // Watermark - School Logo
+        const watermarkLogoImg = document.getElementById('watermarkLogoImg');
+        if (watermarkLogoImg) {
+            if (this.schoolLogo) {
+                watermarkLogoImg.src = this.schoolLogo;
+                watermarkLogoImg.classList.remove('hidden');
+            } else {
+                watermarkLogoImg.classList.add('hidden');
+            }
         }
 
         // Student info
@@ -492,14 +554,12 @@ const App = {
         this.setPreviewText('previewStudentPhone', t.student.phone);
 
         // Academic info
-        this.setPreviewText('previewEnrollmentStatus', t.academic.enrollmentStatus);
         this.setPreviewText('previewGradeLevel', t.academic.gradeLevel);
         this.setPreviewText('previewGpa', t.academic.gpa);
         this.setPreviewText('previewWeightedGpa', t.academic.weightedGpa);
         this.setPreviewText('previewClassRank', t.academic.classRank);
         this.setPreviewText('previewVerificationCode', t.academic.verificationCode);
-        this.setPreviewText('previewPrintDate', t.printDate);
-        this.setPreviewText('previewEffectiveDate', t.effectiveDate);
+        this.setPreviewText('previewSignatureDate', t.signatureDate);
 
         // Course table
         this.updatePreviewCourseTable();

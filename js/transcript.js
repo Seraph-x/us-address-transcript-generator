@@ -269,8 +269,6 @@ const TranscriptGenerator = {
     // Create transcript data object
     createTranscript(studentInfo, schoolInfo, courses = [], options = {}) {
         const today = new Date();
-        const effectiveDate = new Date();
-        effectiveDate.setMonth(effectiveDate.getMonth() + 1); // Extend by one month
 
         return {
             student: {
@@ -287,7 +285,6 @@ const TranscriptGenerator = {
                 logo: options.schoolLogo || null
             },
             academic: {
-                enrollmentStatus: options.enrollmentStatus || 'Active',
                 gradeLevel: options.gradeLevel || '12',
                 entryDate: options.entryDate || '08/15/2021',
                 expectedGraduation: options.expectedGraduation || '06/15/2025',
@@ -298,9 +295,7 @@ const TranscriptGenerator = {
             },
             courses: courses,
             creditSummary: this.calculateCreditSummary(courses),
-            printDate: today.toLocaleDateString('en-US'),
-            effectiveDate: effectiveDate.toLocaleDateString('en-US'),
-            watermark: options.watermark || schoolInfo.name || ''
+            signatureDate: today.toLocaleDateString('en-US')
         };
     },
 

@@ -10,7 +10,9 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Dancing+Script:wght@500;700&family=Great+Vibes&family=Satisfy&display=swap"
+    rel="stylesheet">
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/style.css">
@@ -21,6 +23,12 @@
 </head>
 
 <body>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="themeToggle" title="切换主题">
+    <span class="theme-toggle-icon" id="themeIcon">🌙</span>
+    <span class="theme-toggle-label" id="themeLabel">暗色</span>
+  </button>
+
   <div class="container">
     <!-- Header -->
     <header class="app-header">
@@ -92,16 +100,6 @@
             <input type="text" class="inline-edit hidden" id="editPhone">
             <button class="copy-btn" data-target="displayPhone" title="复制">📋</button>
           </div>
-
-          <div class="info-row">
-            <span class="info-label">在读状态</span>
-            <select id="enrollmentStatusSelect" class="form-control form-control-inline">
-              <option value="Active">Active (在读)</option>
-              <option value="Graduated">Graduated (已毕业)</option>
-              <option value="Transferred">Transferred (已转学)</option>
-              <option value="Withdrawn">Withdrawn (退学)</option>
-            </select>
-          </div>
         </div>
 
         <!-- Matched School -->
@@ -136,12 +134,20 @@
           </div>
 
           <div class="form-group mt-md">
-            <label class="form-label">学校校徽 (可选)</label>
+            <label class="form-label">学校校徽 (用于水印)</label>
             <input type="file" id="schoolLogoInput" accept="image/*" class="form-control">
             <div id="logoPreviewContainer" class="logo-preview-container hidden">
               <img id="schoolLogoPreview" class="logo-preview">
               <button id="removeLogoBtn" class="btn-icon" title="移除">×</button>
             </div>
+          </div>
+
+          <div class="form-group mt-md">
+            <label class="form-label">校长姓名 (用于签名)</label>
+            <input type="text" id="principalNameInput" class="form-control" placeholder="例如: Dr. John Smith">
+            <button id="generateSignatureBtn" class="btn btn-secondary btn-sm mt-sm">
+              ✍️ 生成签名
+            </button>
           </div>
         </div>
 
@@ -233,8 +239,10 @@
 
           <!-- Transcript Preview -->
           <div class="transcript-preview" id="transcriptPreview">
-            <!-- Watermark -->
-            <div class="watermark" id="schoolWatermark"></div>
+            <!-- Watermark - School Logo -->
+            <div class="watermark-logo" id="schoolWatermark">
+              <img id="watermarkLogoImg" class="watermark-logo-img hidden" alt="School Logo Watermark">
+            </div>
             <div class="transcript-inner">
               <!-- School Header -->
               <div class="transcript-header">
@@ -276,10 +284,6 @@
               <div class="transcript-section">
                 <h3>Academic Summary</h3>
                 <div class="transcript-grid">
-                  <div class="transcript-row">
-                    <span class="transcript-label">Enrollment Status:</span>
-                    <span class="transcript-value" id="previewEnrollmentStatus">Active</span>
-                  </div>
                   <div class="transcript-row">
                     <span class="transcript-label">Grade Level:</span>
                     <span class="transcript-value" id="previewGradeLevel">12</span>
@@ -370,8 +374,17 @@
               <!-- Footer -->
               <div class="transcript-footer">
                 <p>This is an official transcript of <span id="previewSchoolNameFooter">-</span>.</p>
-                <p>Print Date: <span id="previewPrintDate">-</span> | Effective Date: <span
-                    id="previewEffectiveDate">-</span></p>
+                <div class="signature-section">
+                  <div class="signature-left">
+                    <div class="signature-display" id="signatureDisplay"></div>
+                    <div class="signature-line"></div>
+                    <p class="signature-label">Principal's Signature</p>
+                  </div>
+                  <div class="signature-right">
+                    <span class="signature-date" id="previewSignatureDate">-</span>
+                    <p class="signature-label">Date</p>
+                  </div>
+                </div>
                 <p class="verification-note">For verification, please contact the Registrar's Office at: <span
                     id="previewRegistrarPhone">-</span></p>
               </div>
@@ -391,6 +404,7 @@
   </div>
 
   <!-- Scripts -->
+  <script src="js/theme.js"></script>
   <script src="js/address-generator.js"></script>
   <script src="js/school-matcher.js"></script>
   <script src="js/transcript.js"></script>
