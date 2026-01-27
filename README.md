@@ -12,6 +12,28 @@ US Address & Transcript Generator
 - **PDF导出** - 一键下载专业格式的成绩单PDF
 - **现代UI** - 深色主题 + 玻璃拟态设计
 
+## 🔑 API 配置 (API Configuration)
+
+为了保护隐私，Goegocoding API 密钥不包含在源代码中。
+
+### 1. 本地运行 (Local Setup)
+
+1.  将 `js/config.template.js` 重命名为 `js/config.js`。
+2.  在 `js/config.js` 中填入你的 **Google Maps API Key**。
+
+### 2. Cloudflare Pages 部署 (Cloudflare Deployment)
+
+在 Cloudflare Pages 的 **Settings > Builds & deployments > Environment variables** 中：
+
+1.  添加环境变量 `GOOGLE_MAPS_API_KEY`，值为你的 API Key。
+2.  在 **Build settings** 中设置 **Build command** 为：
+    ```bash
+    cp js/config.template.js js/config.js && sed -i "s/YOUR_API_KEY_HERE/$GOOGLE_MAPS_API_KEY/g" js/config.js
+    ```
+3.  **Build output directory** 设置为 `/`。
+
+部署完成后，CI/CD 会自动将环境变量注入到配置文件中。
+
 ## 🚀 一键部署到 Cloudflare Pages
 
 [![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/YOUR_USERNAME/us-address-transcript-generator)
