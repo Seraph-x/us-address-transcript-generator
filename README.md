@@ -2,16 +2,32 @@
 
 生成真实格式的美国住宅地址，自动匹配学区高中，一键生成成绩单 PDF。
 
-## 🚀 一键部署到 Cloudflare Pages
+> 💡 **无需 API Key**：本项目使用 OpenStreetMap Nominatim（免费公开 API）
 
-[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zhweji0505/us-address-transcript-generator)
+## 🚀 部署到 Cloudflare Pages
 
-> 💡 **无需配置**：直接点击按钮，授权 GitHub，即可自动部署。无需填写任何构建命令或 API 密钥。
+### 方法一：通过 Cloudflare Dashboard（推荐）
+
+1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
+2. 进入 **Pages** → **Create project** → **Connect to Git**
+3. 选择此仓库：`zhweji0505/us-address-transcript-generator`
+4. 配置（保持默认即可）：
+   - **Framework preset**: `None`
+   - **Build command**: *(留空)*
+   - **Build output directory**: `/`
+5. 点击 **Save and Deploy**
+
+部署完成后会获得一个 `*.pages.dev` 的 URL。
+
+### 方法二：Fork 后部署
+
+1. Fork 本仓库到你的 GitHub
+2. 按照方法一的步骤连接你 Fork 的仓库
 
 ## ✨ 功能特点
 
 ### 🏠 住宅地址生成
-- 通过 OpenStreetMap Nominatim API 获取**真实地址**（免费，无需 API Key）
+- 通过 OpenStreetMap Nominatim API 获取**真实地址**
 - **严格住宅过滤** - 只返回真正的住宅/公寓
 - 自动排除：湖泊、马路、公园、商业区、学校等
 - 格式示例：`1234 N 48th Ave, Phoenix, AZ 85001`
@@ -32,7 +48,7 @@
 - 一键下载专业格式 PDF
 - 支持学校 Logo 和水印
 
-## � 本地运行
+## 💻 本地运行
 
 ```bash
 # 方法 1：使用 npx serve
@@ -72,23 +88,6 @@ us-address-transcript-generator/
 4. **添加课程** - 选择学期、输入课程名、成绩、学分等
 5. **预览成绩单** - 右侧实时显示成绩单预览
 6. **下载 PDF** - 点击「Download PDF」导出成绩单
-
-## 🔧 技术细节
-
-### 地址发现算法
-1. 在选定州内随机选取坐标点
-2. 使用 OSM Nominatim 反向地理编码
-3. 应用严格住宅过滤器：
-   - 必须有门牌号
-   - 必须是 `building` 或 `place:house` 类型
-   - 排除商业设施、公共设施、道路、水域等
-4. 最多重试 20 次以找到有效住宅地址
-
-### 学区匹配算法
-1. **精确 ZIP 匹配** - 同邮编的学校
-2. **ZIP 前缀匹配** - 邻近区域（前 3 位相同）
-3. **同州匹配** - 同州内的学校
-4. **随机匹配** - 数据库中任意学校
 
 ## ⚠️ 免责声明
 
