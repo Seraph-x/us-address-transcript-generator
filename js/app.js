@@ -254,44 +254,33 @@ const App = {
 
             const stateCode = this.currentAddress.state;
 
-            // Step 2: Select a school from the SAME state
-            const stateSchools = SchoolMatcher.getSchoolsByState(stateCode);
-            let school = null;
+            // Step 2: Match school using ZIP code for better geographical accuracy
+            // This will try: exact ZIP -> ZIP prefix -> same state -> random
+            const matchedSchool = SchoolMatcher.match(this.currentAddress);
 
-            if (stateSchools.length > 0) {
-                // Pick a random school from the same state
-                school = stateSchools[Math.floor(Math.random() * stateSchools.length)];
-            } else if (SchoolMatcher.schools.length > 0) {
-                // Fallback to any random school if no schools in that state (unlikely for US states)
-                school = SchoolMatcher.schools[Math.floor(Math.random() * SchoolMatcher.schools.length)];
-            }
+            if (matchedSchool) {
+                this.currentSchool = matchedSchool;
 
-            if (school) {
-                this.currentSchool = {
-                    name: school.name,
-                    address: school.address,
-                    city: school.city,
-                    state: school.state,
-                    zip: school.zip,
-                    phone: school.phone,
-                    fullAddress: `${school.address}, ${school.city}, ${school.state} ${school.zip}`
-                };
-
-                // For the school selector, provide other schools from the same state
-                this.availableSchools = SchoolMatcher.getSchoolsByState(stateCode)
-                    .sort(() => 0.5 - Math.random())
-                    .slice(0, 5)
-                    .map(s => ({
-                        name: s.name,
-                        address: s.address,
-                        city: s.city,
-                        state: s.state,
-                        zip: s.zip,
-                        phone: s.phone,
-                        fullAddress: `${s.address}, ${s.city}, ${s.state} ${s.zip}`
-                    }));
-
+                // For the school selector, provide nearby schools (by ZIP and state)
+                this.availableSchools = SchoolMatcher.matchMultiple(this.currentAddress, 5);
                 this.updateSchoolSelector();
+            } else {
+                // Fallback: pick random school from same state
+                const stateSchools = SchoolMatcher.getSchoolsByState(stateCode);
+                if (stateSchools.length > 0) {
+                    const school = stateSchools[Math.floor(Math.random() * stateSchools.length)];
+                    this.currentSchool = {
+                        name: school.name,
+                        address: school.address,
+                        city: school.city,
+                        state: school.state,
+                        zip: school.zip,
+                        phone: school.phone,
+                        fullAddress: `${school.address}, ${school.city}, ${school.state} ${school.zip}`
+                    };
+                    this.availableSchools = [this.currentSchool];
+                    this.updateSchoolSelector();
+                }
             }
 
             // Update UI

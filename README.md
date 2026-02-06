@@ -1,111 +1,124 @@
-# 🇺🇸 美国地址 & 高中成绩单生成器
+# 🇺🇸 US Address & High School Transcript Generator
 
-US Address & Transcript Generator
+Generate realistic US residential addresses with automatic high school matching and professional academic transcript PDF export.
 
-生成真实格式的美国地址，自动匹配附近公立高中，一键生成成绩单 PDF。
+生成真实格式的美国住宅地址，自动匹配学区高中，一键生成成绩单 PDF。
 
-## ✨ 功能特点
+![Demo Screenshot](https://via.placeholder.com/800x400?text=US+Address+Transcript+Generator)
 
-- **地址生成** - 生成真实格式的美国地址
-- **高中匹配** - 根据ZIP码自动匹配附近的美国公立高中
-- **成绩单生成** - 学期范围 2020-2030，支持课程管理和GPA计算
-- **PDF导出** - 一键下载专业格式的成绩单PDF
-- **现代UI** - 深色主题 + 玻璃拟态设计
+## ✨ Features
 
-## 🔑 API 配置 (API Configuration)
+### 🏠 Residential Address Generation
+- **Real addresses** via OpenStreetMap Nominatim API (no API key required!)
+- **Strict residential filtering** - only returns actual houses/apartments
+- Excludes: lakes, roads, parks, commercial buildings, schools, etc.
+- Format: `1234 N 48th Ave, Phoenix, AZ 85001`
 
-为了保护隐私，Goegocoding API 密钥不包含在源代码中。
+### 🏫 Smart School Matching
+- **ZIP-code based matching** for geographical accuracy
+- Priority: Exact ZIP → ZIP prefix → Same state → Random
+- Database of ~1000+ US public high schools
 
-### 1. 本地运行 (Local Setup)
+### 📄 Professional Transcripts
+- Academic years 2020-2030
+- Course management with GPA calculation (weighted & unweighted)
+- Credit tracking by subject area
+- Principal signature support
+- Emergency contact information
 
-1.  将 `js/config.template.js` 重命名为 `js/config.js`。
-2.  在 `js/config.js` 中填入你的 **Google Maps API Key**。
+### 📥 PDF Export
+- One-click professional PDF download
+- School letterhead with optional logo
+- Watermark support
 
-### 2. Cloudflare Pages 部署 (Cloudflare Deployment)
+## 🚀 Quick Start
 
-**非常简单，只需一步配置！**
-
-1.  在 Cloudflare Pages 的 **Settings > Environment variables** 中：
-    *   添加变量：`GOOGLE_MAPS_API_KEY`
-    *   值：`你的 API Key`
-
-2.  **重新部署**（如果项目已存在）：
-    *   点击 **Deployments** > 选择最近的部署 > **Retry deployment**。
-
-*(我们使用了 Cloudflare Functions 自动处理配置，因此**不需要**填写任何构建命令)*
-
-## 🚀 一键部署到 Cloudflare Pages
-
-[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/YOUR_USERNAME/us-address-transcript-generator)
-
-### 手动部署步骤
-
-1. Fork 本仓库到你的 GitHub 账户
-2. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
-3. 进入 **Pages** > **Create a project** > **Connect to Git**
-4. 选择你 fork 的仓库
-5. 配置：
-   - **Build command**: 留空（无需构建）
-   - **Build output directory**: `/`（根目录）
-6. 点击 **Save and Deploy**
-
-部署完成后，你会获得一个 `*.pages.dev` 的URL。
-
-## 💻 本地运行
+### Local Development
 
 ```bash
-# 方法1：使用 npx serve
-npx serve .
+# Option 1: Using npx serve
+npx serve . -l 3000
 
-# 方法2：使用 Python
+# Option 2: Using Python
 python -m http.server 8000
 
-# 方法3：直接打开
-# 双击 index.html（部分功能可能受限）
+# Then open http://localhost:3000 or http://localhost:8000
 ```
 
-## 📁 项目结构
+### Deploy to Cloudflare Pages
+
+1. Fork this repository
+2. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Pages**
+3. Create project → Connect to Git → Select your fork
+4. Configure:
+   - **Build command**: *(leave empty)*
+   - **Build output directory**: `/`
+5. Deploy!
+
+> 💡 No API keys required! This project uses OpenStreetMap Nominatim (free, no registration).
+
+## 📁 Project Structure
 
 ```
 us-address-transcript-generator/
-├── index.html              # 主页面
+├── index.html                  # Main page
 ├── css/
-│   └── style.css           # 样式文件
+│   └── style.css               # Styles (dark theme + glassmorphism)
 ├── js/
-│   ├── app.js              # 主应用逻辑
-│   ├── address-generator.js # 地址生成模块
-│   ├── school-matcher.js   # 高中匹配模块
-│   ├── transcript.js       # 成绩单生成模块
-│   └── pdf-export.js       # PDF 导出功能
+│   ├── app.js                  # Main application logic
+│   ├── address-generator.js    # Fallback address generation
+│   ├── address-validator.js    # OSM integration & residential filtering
+│   ├── school-matcher.js       # ZIP-based school matching
+│   ├── transcript.js           # Transcript generation
+│   ├── pdf-export.js           # PDF export functionality
+│   ├── config.js               # Configuration
+│   └── theme.js                # Theme management
 ├── data/
-│   └── us-high-schools.json # 美国公立高中数据
+│   ├── us-high-schools.json    # US public high school database
+│   └── residential-streets.json # Real residential street data
 └── README.md
 ```
 
-## 📋 使用说明
+## 📋 How to Use
 
-1. **选择州** - 从下拉菜单选择美国州，或留空随机选择
-2. **生成地址** - 点击"生成地址信息"按钮
-3. **查看匹配学校** - 系统自动根据ZIP码匹配附近高中
-4. **添加课程** - 选择学期、输入课程名、成绩、学分等
-5. **预览成绩单** - 右侧实时显示成绩单预览
-6. **下载PDF** - 点击"下载PDF"导出成绩单
+1. **Select State** - Choose a US state or leave as "Random"
+2. **Generate Address** - Click "✨ 生成地址信息" (Generate Address)
+3. **View Matched School** - System automatically matches nearby high school by ZIP code
+4. **Add Courses** - Select semester, enter course name, grade, credits, level
+5. **Preview Transcript** - Real-time preview on the right panel
+6. **Download PDF** - Click "Download PDF" to export
 
-## ⚠️ 免责声明
+## 🔧 Technical Details
 
-本工具仅供**教育和测试目的**使用。生成的地址和成绩单为虚拟数据，禁止用于任何非法活动。
+### Address Discovery Algorithm
+1. Picks random coordinates within selected state
+2. Uses OSM Nominatim reverse geocoding
+3. Applies strict residential filter:
+   - Must have house number
+   - Must be `building` or `place:house` class
+   - Excludes amenities, shops, offices, highways, water, parks, etc.
+4. Retries up to 20 times to find valid residential address
 
-This tool is for **educational and testing purposes only**. Generated addresses and transcripts are fictional data. Prohibited for illegal activities.
+### School Matching Algorithm
+1. **Exact ZIP match** - Schools in the same ZIP code
+2. **ZIP prefix match** - Schools in nearby areas (same first 3 digits)
+3. **State fallback** - Any school in the same state
+4. **Random fallback** - Any school in database
 
-## 🙏 致谢 / Acknowledgments
+## ⚠️ Disclaimer
 
-本项目基于以下开源项目开发，特此感谢：
+This tool is for **educational and testing purposes only**.
 
-This project is based on the following open-source projects. Special thanks to:
+Generated addresses and transcripts are for demonstration purposes. Do not use for any illegal activities.
 
-- [Real US Address Generator](https://dkanqnkbs.pages.dev/) - 美国高中成绩单生成器
-- [chatgptuk/Real-US-Address-Generator](https://github.com/chatgptuk/Real-US-Address-Generator) - 真实美国地址生成器
+本工具仅供**教育和测试目的**使用。生成的地址和成绩单为演示数据，禁止用于任何非法活动。
+
+## 🙏 Acknowledgments
+
+- [OpenStreetMap](https://www.openstreetmap.org/) - Address data via Nominatim API
+- [html2canvas](https://html2canvas.hertzen.com/) - PDF generation
+- [jsPDF](https://github.com/parallax/jsPDF) - PDF export
 
 ## 📄 License
 
-MIT License
+MIT License - see [LICENSE](LICENSE) for details.

@@ -130,26 +130,34 @@ const AddressGenerator = {
         'DC': { name: 'District of Columbia', areaCodes: ['202'] }
     },
 
-    // Common street names - Expanded database
+    // Common residential street names
     streetNames: [
-        'Main', 'Oak', 'Maple', 'Cedar', 'Pine', 'Elm', 'Washington', 'Lake', 'Hill', 'Park',
-        'Forest', 'River', 'Valley', 'Spring', 'Sunset', 'Highland', 'Garden', 'Willow', 'Meadow', 'Ridge',
-        'Birch', 'Cherry', 'Walnut', 'Hickory', 'Chestnut', 'Laurel', 'Rose', 'Magnolia', 'Peach', 'Apple',
-        'Lincoln', 'Jefferson', 'Franklin', 'Adams', 'Madison', 'Monroe', 'Jackson', 'Harrison', 'Tyler', 'Polk',
-        'Taylor', 'Grant', 'Hayes', 'McKinley', 'Roosevelt', 'Kennedy', 'Reagan', 'Clinton', 'Obama', 'Bush',
-        'North', 'South', 'East', 'West', 'Central', 'Broadway', 'Market', 'Church', 'School', 'Mill',
-        'Water', 'Front', 'Academy', 'College', 'Union', 'Liberty', 'State', 'Center', 'Division', 'Railroad',
-        'Prospect', 'Grove', 'Pleasant', 'Summit', 'Grand', 'Heritage', 'Colonial', 'Independence', 'Freedom', 'Victory',
-        'Cambridge', 'Oxford', 'Bristol', 'Chester', 'Windsor', 'Hampton', 'Kingston', 'Wellington', 'Princeton', 'Stanford',
-        'Beverly', 'Fairview', 'Lakewood', 'Greenwood', 'Woodside', 'Riverside', 'Northview', 'Southgate', 'Eastwood', 'Westview',
-        'Sunrise', 'Morning', 'Evening', 'Twilight', 'Dawn', 'Dusk', 'Autumn', 'Winter', 'Summer', 'Spring',
-        'Golden', 'Silver', 'Crystal', 'Diamond', 'Emerald', 'Ruby', 'Sapphire', 'Pearl', 'Jade', 'Amber',
-        'Mountain', 'Canyon', 'Desert', 'Prairie', 'Plains', 'Coast', 'Shore', 'Harbor', 'Bay', 'Ocean',
-        'Eagle', 'Falcon', 'Hawk', 'Dove', 'Robin', 'Cardinal', 'Blue Jay', 'Sparrow', 'Finch', 'Oriole',
-        'Deer', 'Fox', 'Wolf', 'Bear', 'Lion', 'Tiger', 'Panther', 'Cougar', 'Jaguar', 'Mustang'
+        'Oak', 'Maple', 'Cedar', 'Pine', 'Elm', 'Birch', 'Willow', 'Hickory', 'Walnut', 'Cherry',
+        'Magnolia', 'Sycamore', 'Poplar', 'Dogwood', 'Chestnut', 'Laurel', 'Holly', 'Juniper', 'Cypress', 'Aspen'
     ],
 
-    streetTypes: ['St', 'Ave', 'Blvd', 'Dr', 'Ln', 'Rd', 'Way', 'Ct', 'Pl', 'Cir', 'Ter', 'Pkwy', 'Path', 'Trail', 'Loop'],
+    // Directional prefixes for residential addresses
+    directionalPrefixes: ['N', 'S', 'E', 'W'],
+
+    // Residential-focused street types
+    residentialStreetTypes: ['Ave', 'Dr', 'Ln', 'Way', 'Ct', 'Pl'],
+    streetTypes: ['St', 'Ave', 'Blvd', 'Dr', 'Ln', 'Rd', 'Way', 'Ct', 'Pl', 'Cir', 'Ter'],
+
+    // Generate ordinal suffix for numbers (1st, 2nd, 3rd, etc.)
+    getOrdinalSuffix(num) {
+        const j = num % 10;
+        const k = num % 100;
+        if (j === 1 && k !== 11) return 'st';
+        if (j === 2 && k !== 12) return 'nd';
+        if (j === 3 && k !== 13) return 'rd';
+        return 'th';
+    },
+
+    // Generate a numbered street name (e.g., "47th", "48th")
+    generateNumberedStreet() {
+        const streetNum = this.randomNumber(30, 99);
+        return streetNum + this.getOrdinalSuffix(streetNum);
+    },
 
     // Common first names - Expanded to 100+
     maleNames: [
@@ -330,14 +338,26 @@ const AddressGenerator = {
         return `(${areaCode}) ${exchange}-${subscriber}`;
     },
 
+    // Generate a realistic residential-style address (e.g., "6243 N 48th Ave")
     generateAddress(stateCode) {
-        const streetNumber = this.randomNumber(100, 9999);
-        const streetName = this.random(this.streetNames);
-        const streetType = this.random(this.streetTypes);
-        return `${streetNumber} ${streetName} ${streetType}`;
+        // Use numbered streets 80% of the time for residential feel
+        const useNumberedStreet = Math.random() < 0.8;
+        const streetNumber = this.randomNumber(1000, 9999);
+        const direction = this.random(this.directionalPrefixes);
+        const streetType = this.random(this.residentialStreetTypes);
+
+        let streetName;
+        if (useNumberedStreet) {
+            streetName = this.generateNumberedStreet();
+        } else {
+            streetName = this.random(this.streetNames);
+        }
+
+        return `${streetNumber} ${direction} ${streetName} ${streetType}`;
     },
 
     // Generate residential address using real street data for a specific ZIP
+    // Falls back to generated residential-style address if no data available
     generateResidentialAddress(zipCode) {
         if (this.residentialStreets && this.residentialStreets[zipCode]) {
             const streets = this.residentialStreets[zipCode];
@@ -345,14 +365,21 @@ const AddressGenerator = {
             const streetNumber = this.randomNumber(street.min, street.max);
             return `${streetNumber} ${street.name}`;
         }
-        // Fallback to generic residential-style address
-        const streetNumber = this.randomNumber(100, 2000);
-        const residentialStreetNames = [
-            'Oak Ln', 'Maple Dr', 'Cedar Ct', 'Pine Way', 'Elm Pl',
-            'Birch Rd', 'Willow Ln', 'Cherry Dr', 'Walnut Ct', 'Hickory Way',
-            'Magnolia Dr', 'Dogwood Ln', 'Sycamore Ct', 'Chestnut Rd', 'Aspen Way'
-        ];
-        return `${streetNumber} ${this.random(residentialStreetNames)}`;
+        // Fallback to generated residential-style address (e.g., "6217 N 47th Dr")
+        const streetNumber = this.randomNumber(1000, 9999);
+        const direction = this.random(this.directionalPrefixes);
+        const streetType = this.random(this.residentialStreetTypes);
+
+        // 80% numbered streets, 20% named streets for residential feel
+        const useNumberedStreet = Math.random() < 0.8;
+        let streetName;
+        if (useNumberedStreet) {
+            streetName = this.generateNumberedStreet();
+        } else {
+            streetName = this.random(this.streetNames);
+        }
+
+        return `${streetNumber} ${direction} ${streetName} ${streetType}`;
     },
 
     generateCity(stateCode) {

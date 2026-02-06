@@ -31,7 +31,10 @@ const AddressValidator = {
             const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&addressdetails=1&limit=1`;
 
             const response = await fetch(url, {
-                headers: { 'User-Agent': this.userAgent }
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Accept-Language': 'en'
+                }
             });
             const data = await response.json();
 
@@ -82,7 +85,10 @@ const AddressValidator = {
             const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
 
             const response = await fetch(url, {
-                headers: { 'User-Agent': this.userAgent }
+                headers: {
+                    'User-Agent': this.userAgent,
+                    'Accept-Language': 'en'
+                }
             });
             const data = await response.json();
 
@@ -93,12 +99,48 @@ const AddressValidator = {
 
                 console.log(`OSM Result: ${data.display_name} (Class: ${osmClass}, Type: ${osmType})`);
 
-                // Stricter precision check:
+                // STRICT residential-only filter:
+                // Exclude non-residential types explicitly
+                const nonResidentialClasses = [
+                    'highway', 'natural', 'water', 'waterway', 'landuse',
+                    'amenity', 'office', 'shop', 'tourism', 'leisure',
+                    'sport', 'historic', 'railway', 'aeroway', 'power',
+                    'man_made', 'barrier', 'military', 'emergency'
+                ];
+
+                const nonResidentialTypes = [
+                    'lake', 'river', 'stream', 'pond', 'reservoir', 'water',
+                    'park', 'forest', 'wood', 'meadow', 'grass', 'cemetery',
+                    'parking', 'industrial', 'commercial', 'retail',
+                    'school', 'university', 'college', 'hospital', 'clinic',
+                    'church', 'library', 'police', 'fire_station',
+                    'restaurant', 'cafe', 'bar', 'fast_food', 'fuel',
+                    'bank', 'atm', 'pharmacy', 'supermarket', 'mall'
+                ];
+
+                // Residential building types we accept
+                const residentialTypes = [
+                    'house', 'residential', 'detached', 'semidetached', 'terrace',
+                    'apartments', 'apartment', 'flat', 'flats', 'dwelling',
+                    'bungalow', 'cottage', 'townhouse', 'duplex', 'triplex',
+                    'yes' // OSM often uses building=yes for residential
+                ];
+
+                // Check if it's a valid residential address:
                 // 1. Must have house_number
-                // 2. Class should be 'building' or 'place' (not 'highway')
-                const isPrecise = !!addr.house_number &&
-                    osmClass !== 'highway' &&
-                    (osmClass === 'building' || osmClass === 'place' || osmClass === 'amenity' || osmClass === 'office' || osmClass === 'shop');
+                // 2. Must NOT be in excluded classes
+                // 3. Should be a building class OR have residential type
+                const hasHouseNumber = !!addr.house_number;
+                const isExcludedClass = nonResidentialClasses.includes(osmClass);
+                const isExcludedType = nonResidentialTypes.includes(osmType);
+                const isResidentialType = residentialTypes.includes(osmType);
+                const isBuilding = osmClass === 'building' || osmClass === 'place';
+
+                // Must have house number and NOT be excluded, and either be a building or residential type
+                const isPrecise = hasHouseNumber &&
+                    !isExcludedClass &&
+                    !isExcludedType &&
+                    (isBuilding || isResidentialType);
 
                 return {
                     isValid: true,
