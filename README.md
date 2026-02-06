@@ -2,51 +2,35 @@
 
 生成真实格式的美国住宅地址，自动匹配学区高中，一键生成成绩单 PDF。
 
-> 💡 **无需 API Key**：本项目使用 OpenStreetMap Nominatim（免费公开 API）
-
 ## 🚀 部署到 Cloudflare Pages
 
-### 方法一：通过 Cloudflare Dashboard（推荐）
-
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. 进入 **Pages** → **Create project** → **Connect to Git**
-3. 选择此仓库：`zhweji0505/us-address-transcript-generator`
-4. 配置（保持默认即可）：
+1. Fork 本仓库到你的 GitHub
+2. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
+3. 左侧菜单点击 "Workers & Pages"
+4. 点击右上方 "创建应用程序" 按钮
+5. 选择下方 "Pages" 标签页
+6. 点击“导入现有 Git 存储库”
+7. 选择此仓库：`zhweji0505/us-address-transcript-generator`
+8. 配置（保持默认即可）：
    - **Framework preset**: `None`
    - **Build command**: *(留空)*
    - **Build output directory**: `/`
-5. 点击 **Save and Deploy**
+5. 点击 **保存和部署**
 
 部署完成后会获得一个 `*.pages.dev` 的 URL。
 
-### 方法二：Fork 后部署
-
-1. Fork 本仓库到你的 GitHub
-2. 按照方法一的步骤连接你 Fork 的仓库
 
 ## ✨ 功能特点
 
 ### 🏠 住宅地址生成
-- 通过 OpenStreetMap Nominatim API 获取**真实地址**
-- **严格住宅过滤** - 只返回真正的住宅/公寓
-- 自动排除：湖泊、马路、公园、商业区、学校等
-- 格式示例：`1234 N 48th Ave, Phoenix, AZ 85001`
+- 通过 OpenStreetMap Nominatim API 获取**地址**
 
 ### 🏫 智能学区匹配
 - 基于 **ZIP 邮编** 的地理精准匹配
-- 匹配优先级：精确 ZIP → ZIP 前缀 → 同州 → 随机
-- 内置 1000+ 所美国公立高中数据
 
-### 📄 专业成绩单
-- 支持 2020-2030 学年
-- 课程管理与 GPA 自动计算（加权 & 非加权）
-- 学分分类统计
-- 校长签名支持
-- 紧急联系人信息
+### 📄 预览成绩单
 
 ### 📥 PDF 导出
-- 一键下载专业格式 PDF
-- 支持学校 Logo 和水印
 
 ## 💻 本地运行
 
