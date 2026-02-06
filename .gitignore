@@ -1,3 +1,9 @@
+# Dependencies
+node_modules/
+
+# Wrangler
+.wrangler/
+
 # Local configuration
 js/config.js
 
