@@ -1,124 +1,109 @@
-# 🇺🇸 US Address & High School Transcript Generator
-
-Generate realistic US residential addresses with automatic high school matching and professional academic transcript PDF export.
+# 🇺🇸 美国地址 & 高中成绩单生成器
 
 生成真实格式的美国住宅地址，自动匹配学区高中，一键生成成绩单 PDF。
 
-![Demo Screenshot](https://via.placeholder.com/800x400?text=US+Address+Transcript+Generator)
+## 🚀 一键部署到 Cloudflare Pages
 
-## ✨ Features
+[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/zhweji0505/us-address-transcript-generator)
 
-### 🏠 Residential Address Generation
-- **Real addresses** via OpenStreetMap Nominatim API (no API key required!)
-- **Strict residential filtering** - only returns actual houses/apartments
-- Excludes: lakes, roads, parks, commercial buildings, schools, etc.
-- Format: `1234 N 48th Ave, Phoenix, AZ 85001`
+> 💡 **无需配置**：直接点击按钮，授权 GitHub，即可自动部署。无需填写任何构建命令或 API 密钥。
 
-### 🏫 Smart School Matching
-- **ZIP-code based matching** for geographical accuracy
-- Priority: Exact ZIP → ZIP prefix → Same state → Random
-- Database of ~1000+ US public high schools
+## ✨ 功能特点
 
-### 📄 Professional Transcripts
-- Academic years 2020-2030
-- Course management with GPA calculation (weighted & unweighted)
-- Credit tracking by subject area
-- Principal signature support
-- Emergency contact information
+### 🏠 住宅地址生成
+- 通过 OpenStreetMap Nominatim API 获取**真实地址**（免费，无需 API Key）
+- **严格住宅过滤** - 只返回真正的住宅/公寓
+- 自动排除：湖泊、马路、公园、商业区、学校等
+- 格式示例：`1234 N 48th Ave, Phoenix, AZ 85001`
 
-### 📥 PDF Export
-- One-click professional PDF download
-- School letterhead with optional logo
-- Watermark support
+### 🏫 智能学区匹配
+- 基于 **ZIP 邮编** 的地理精准匹配
+- 匹配优先级：精确 ZIP → ZIP 前缀 → 同州 → 随机
+- 内置 1000+ 所美国公立高中数据
 
-## 🚀 Quick Start
+### 📄 专业成绩单
+- 支持 2020-2030 学年
+- 课程管理与 GPA 自动计算（加权 & 非加权）
+- 学分分类统计
+- 校长签名支持
+- 紧急联系人信息
 
-### Local Development
+### 📥 PDF 导出
+- 一键下载专业格式 PDF
+- 支持学校 Logo 和水印
+
+## � 本地运行
 
 ```bash
-# Option 1: Using npx serve
+# 方法 1：使用 npx serve
 npx serve . -l 3000
 
-# Option 2: Using Python
+# 方法 2：使用 Python
 python -m http.server 8000
 
-# Then open http://localhost:3000 or http://localhost:8000
+# 然后打开 http://localhost:3000 或 http://localhost:8000
 ```
 
-### Deploy to Cloudflare Pages
-
-1. Fork this repository
-2. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Pages**
-3. Create project → Connect to Git → Select your fork
-4. Configure:
-   - **Build command**: *(leave empty)*
-   - **Build output directory**: `/`
-5. Deploy!
-
-> 💡 No API keys required! This project uses OpenStreetMap Nominatim (free, no registration).
-
-## 📁 Project Structure
+## 📁 项目结构
 
 ```
 us-address-transcript-generator/
-├── index.html                  # Main page
+├── index.html                  # 主页面
 ├── css/
-│   └── style.css               # Styles (dark theme + glassmorphism)
+│   └── style.css               # 样式（深色主题 + 玻璃拟态）
 ├── js/
-│   ├── app.js                  # Main application logic
-│   ├── address-generator.js    # Fallback address generation
-│   ├── address-validator.js    # OSM integration & residential filtering
-│   ├── school-matcher.js       # ZIP-based school matching
-│   ├── transcript.js           # Transcript generation
-│   ├── pdf-export.js           # PDF export functionality
-│   ├── config.js               # Configuration
-│   └── theme.js                # Theme management
+│   ├── app.js                  # 主应用逻辑
+│   ├── address-generator.js    # 地址生成备用模块
+│   ├── address-validator.js    # OSM 集成 & 住宅过滤
+│   ├── school-matcher.js       # ZIP 学区匹配
+│   ├── transcript.js           # 成绩单生成
+│   └── pdf-export.js           # PDF 导出
 ├── data/
-│   ├── us-high-schools.json    # US public high school database
-│   └── residential-streets.json # Real residential street data
+│   ├── us-high-schools.json    # 美国公立高中数据库
+│   └── residential-streets.json # 住宅街道数据
 └── README.md
 ```
 
-## 📋 How to Use
+## 📋 使用说明
 
-1. **Select State** - Choose a US state or leave as "Random"
-2. **Generate Address** - Click "✨ 生成地址信息" (Generate Address)
-3. **View Matched School** - System automatically matches nearby high school by ZIP code
-4. **Add Courses** - Select semester, enter course name, grade, credits, level
-5. **Preview Transcript** - Real-time preview on the right panel
-6. **Download PDF** - Click "Download PDF" to export
+1. **选择州** - 从下拉菜单选择美国州，或留空随机选择
+2. **生成地址** - 点击「✨ 生成地址信息」按钮
+3. **查看匹配学校** - 系统自动根据 ZIP 码匹配附近高中
+4. **添加课程** - 选择学期、输入课程名、成绩、学分等
+5. **预览成绩单** - 右侧实时显示成绩单预览
+6. **下载 PDF** - 点击「Download PDF」导出成绩单
 
-## 🔧 Technical Details
+## 🔧 技术细节
 
-### Address Discovery Algorithm
-1. Picks random coordinates within selected state
-2. Uses OSM Nominatim reverse geocoding
-3. Applies strict residential filter:
-   - Must have house number
-   - Must be `building` or `place:house` class
-   - Excludes amenities, shops, offices, highways, water, parks, etc.
-4. Retries up to 20 times to find valid residential address
+### 地址发现算法
+1. 在选定州内随机选取坐标点
+2. 使用 OSM Nominatim 反向地理编码
+3. 应用严格住宅过滤器：
+   - 必须有门牌号
+   - 必须是 `building` 或 `place:house` 类型
+   - 排除商业设施、公共设施、道路、水域等
+4. 最多重试 20 次以找到有效住宅地址
 
-### School Matching Algorithm
-1. **Exact ZIP match** - Schools in the same ZIP code
-2. **ZIP prefix match** - Schools in nearby areas (same first 3 digits)
-3. **State fallback** - Any school in the same state
-4. **Random fallback** - Any school in database
+### 学区匹配算法
+1. **精确 ZIP 匹配** - 同邮编的学校
+2. **ZIP 前缀匹配** - 邻近区域（前 3 位相同）
+3. **同州匹配** - 同州内的学校
+4. **随机匹配** - 数据库中任意学校
 
-## ⚠️ Disclaimer
+## ⚠️ 免责声明
 
-This tool is for **educational and testing purposes only**.
+本工具仅供**教育和测试目的**使用。
 
-Generated addresses and transcripts are for demonstration purposes. Do not use for any illegal activities.
+生成的地址和成绩单为演示数据，禁止用于任何非法活动。
 
-本工具仅供**教育和测试目的**使用。生成的地址和成绩单为演示数据，禁止用于任何非法活动。
+## 🙏 致谢
 
-## 🙏 Acknowledgments
+本项目基于以下开源项目开发，特此感谢：
 
-- [OpenStreetMap](https://www.openstreetmap.org/) - Address data via Nominatim API
-- [html2canvas](https://html2canvas.hertzen.com/) - PDF generation
-- [jsPDF](https://github.com/parallax/jsPDF) - PDF export
+- [美国高中成绩单生成器](https://dkanqnkbs.pages.dev/) - 原始项目演示
+- [chatgptuk/Real-US-Address-Generator](https://github.com/chatgptuk/Real-US-Address-Generator) - 真实美国地址生成器
+- [OpenStreetMap](https://www.openstreetmap.org/) - 地址数据 API
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT License
