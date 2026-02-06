@@ -102,6 +102,36 @@
           </div>
         </div>
 
+        <!-- Emergency Contact -->
+        <div class="card emergency-contact-card mb-lg">
+          <div class="card-header">
+            <h2><span class="icon">👨‍👩‍👧</span> 紧急联系人 (家长)</h2>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">姓名</span>
+            <span class="info-value" id="displayEmergencyName">-</span>
+            <button class="copy-btn" data-target="displayEmergencyName" title="复制">📋</button>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">关系</span>
+            <span class="info-value" id="displayEmergencyRelation">Parent/Guardian</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">地址</span>
+            <span class="info-value" id="displayEmergencyAddress">-</span>
+            <button class="copy-btn" data-target="displayEmergencyAddress" title="复制">📋</button>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">电话</span>
+            <span class="info-value" id="displayEmergencyPhone">-</span>
+            <button class="copy-btn" data-target="displayEmergencyPhone" title="复制">📋</button>
+          </div>
+        </div>
+
         <!-- Matched School -->
         <div class="card school-info mb-lg">
           <div class="card-header">
@@ -276,6 +306,29 @@
                   <div class="transcript-row">
                     <span class="transcript-label">Phone:</span>
                     <span class="transcript-value" id="previewStudentPhone">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Emergency Contact -->
+              <div class="transcript-section">
+                <h3>Emergency Contact</h3>
+                <div class="transcript-grid">
+                  <div class="transcript-row">
+                    <span class="transcript-label">Name:</span>
+                    <span class="transcript-value" id="previewEmergencyName">-</span>
+                  </div>
+                  <div class="transcript-row">
+                    <span class="transcript-label">Relationship:</span>
+                    <span class="transcript-value" id="previewEmergencyRelation">Parent/Guardian</span>
+                  </div>
+                  <div class="transcript-row">
+                    <span class="transcript-label">Address:</span>
+                    <span class="transcript-value" id="previewEmergencyAddress">-</span>
+                  </div>
+                  <div class="transcript-row">
+                    <span class="transcript-label">Phone:</span>
+                    <span class="transcript-value" id="previewEmergencyPhone">-</span>
                   </div>
                 </div>
               </div>

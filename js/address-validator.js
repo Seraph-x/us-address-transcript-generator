@@ -1,59 +1,66 @@
 /**
  * Address Validator Module
- * Uses Google Geocoding API to validate addresses and ensure they are precise
+ * Uses OpenStreetMap (Nominatim) to validate addresses and ensure they are precise
+ * This works in China and does not require an API key.
  */
 
 const AddressValidator = {
-    apiKey: APP_CONFIG.GOOGLE_MAPS_API_KEY,
+    // Nominatim usage policy: 1 request per second max, custom User-Agent required
+    lastRequestTime: 0,
+    userAgent: 'US-Address-Transcript-Generator/1.0',
+
+    // Helper to respect rate limits (1 second between requests)
+    async throttle() {
+        const now = Date.now();
+        const elapsed = now - this.lastRequestTime;
+        if (elapsed < 1100) {
+            await new Promise(resolve => setTimeout(resolve, 1100 - elapsed));
+        }
+        this.lastRequestTime = Date.now();
+    },
 
     /**
-     * Validate an address using Google Geocoding API
+     * Validate an address using Nominatim API
      * @param {string} address - Full address to validate
-     * @returns {Promise<object>} - Validation result with isValid, isPrecise, coordinates
+     * @returns {Promise<object>} - Validation result
      */
     async validateAddress(address) {
         try {
+            await this.throttle();
             const encodedAddress = encodeURIComponent(address);
-            const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${this.apiKey}`;
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&addressdetails=1&limit=1`;
 
-            const response = await fetch(url);
+            const response = await fetch(url, {
+                headers: { 'User-Agent': this.userAgent }
+            });
             const data = await response.json();
 
-            if (data.status !== 'OK' || !data.results || data.results.length === 0) {
+            if (!data || data.length === 0) {
                 return {
                     isValid: false,
                     isPrecise: false,
-                    error: data.status,
                     message: 'Address not found'
                 };
             }
 
-            const result = data.results[0];
-            const locationType = result.geometry.location_type;
+            const result = data[0];
+            const addr = result.address;
 
-            // ROOFTOP = exact building location (most precise)
-            const isPrecise = locationType === 'ROOFTOP';
-
-            // Check if it's potentially residential
-            const types = result.types || [];
-            const isResidential = types.includes('street_address') || types.includes('premise') || types.includes('subpremise');
+            // Check if it's a precise residential address (has house number)
+            const isPrecise = !!addr.house_number;
 
             return {
                 isValid: true,
                 isPrecise: isPrecise,
-                isResidential: isResidential,
-                locationType: locationType,
-                formattedAddress: result.formatted_address,
+                formattedAddress: result.display_name,
                 coordinates: {
-                    lat: result.geometry.location.lat,
-                    lng: result.geometry.location.lng
+                    lat: parseFloat(result.lat),
+                    lng: parseFloat(result.lon)
                 },
-                placeId: result.place_id,
-                addressComponents: result.address_components,
-                types: types
+                addressComponents: addr
             };
         } catch (error) {
-            console.error('Address validation error:', error);
+            console.error('OSM validation error:', error);
             return {
                 isValid: false,
                 isPrecise: false,
@@ -64,113 +71,112 @@ const AddressValidator = {
     },
 
     /**
-     * Reverse geocode coordinates to find a real address
+     * Reverse geocode coordinates to find a real address via Nominatim
      * @param {number} lat 
      * @param {number} lng 
      * @returns {Promise<object>}
      */
     async reverseGeocode(lat, lng) {
         try {
-            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${this.apiKey}&result_type=street_address|premise|subpremise`;
-            const response = await fetch(url);
+            await this.throttle();
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+
+            const response = await fetch(url, {
+                headers: { 'User-Agent': this.userAgent }
+            });
             const data = await response.json();
 
-            if (data.status === 'OK' && data.results && data.results.length > 0) {
-                const result = data.results[0];
+            if (data && data.address) {
+                const addr = data.address;
+                const osmClass = data.class;
+                const osmType = data.type;
+
+                console.log(`OSM Result: ${data.display_name} (Class: ${osmClass}, Type: ${osmType})`);
+
+                // Stricter precision check:
+                // 1. Must have house_number
+                // 2. Class should be 'building' or 'place' (not 'highway')
+                const isPrecise = !!addr.house_number &&
+                    osmClass !== 'highway' &&
+                    (osmClass === 'building' || osmClass === 'place' || osmClass === 'amenity' || osmClass === 'office' || osmClass === 'shop');
+
                 return {
                     isValid: true,
-                    isPrecise: result.geometry.location_type === 'ROOFTOP',
-                    formattedAddress: result.formatted_address,
-                    coordinates: result.geometry.location,
-                    addressComponents: result.address_components,
-                    types: result.types
+                    isPrecise: isPrecise,
+                    formattedAddress: data.display_name,
+                    coordinates: {
+                        lat: parseFloat(data.lat),
+                        lng: parseFloat(data.lon)
+                    },
+                    addressComponents: addr,
+                    osmMetadata: { class: osmClass, type: osmType }
                 };
             }
             return { isValid: false };
         } catch (error) {
-            console.error('Reverse geocoding error:', error);
+            console.error('OSM Reverse geocoding error:', error);
             return { isValid: false };
         }
     },
 
     /**
-     * Discover a real residential address in a specific area
-     * @param {string} zip 
-     * @param {string} city 
-     * @param {string} state 
+     * Discover a real residential address in a specific state using coordinate-based discovery
+     * @param {string} stateCode 
      */
-    async discoverRealResidentialAddress(zip, city, state) {
-        // Step 1: Get area center coordinates
-        const areaQuery = `${city}, ${state} ${zip}`;
-        const areaGeocode = await this.validateAddress(areaQuery);
+    async discoverRealResidentialAddress(stateCode) {
+        // Get center points for the state
+        const coordsArray = AddressGenerator.stateCoordinates[stateCode] || [{ lat: 39.8283, lng: -98.5795 }];
 
-        if (!areaGeocode.isValid) return null;
+        // Try up to 20 random points (increased from 10)
+        for (let i = 0; i < 20; i++) {
+            const baseCoord = coordsArray[Math.floor(Math.random() * coordsArray.length)];
+            // Random offset: vary discovery radius to hit different densities
+            const range = i < 5 ? 0.05 : (i < 12 ? 0.15 : 0.3);
+            const latOffset = (Math.random() - 0.5) * range;
+            const lngOffset = (Math.random() - 0.5) * range;
 
-        const center = areaGeocode.coordinates;
-
-        // Try up to 5 random points around the center to find a building
-        for (let i = 0; i < 5; i++) {
-            // Apply random offset (approx 300m to 1km)
-            const latOffset = (Math.random() - 0.5) * 0.01;
-            const lngOffset = (Math.random() - 0.5) * 0.01;
-
-            const discovered = await this.reverseGeocode(center.lat + latOffset, center.lng + lngOffset);
+            console.log(`Discovery attempt ${i + 1} for ${stateCode}...`);
+            const discovered = await this.reverseGeocode(baseCoord.lat + latOffset, baseCoord.lng + lngOffset);
 
             if (discovered.isValid && discovered.isPrecise) {
-                const components = discovered.addressComponents;
-                const streetNumber = components.find(c => c.types.includes('street_number'))?.long_name || '';
-                const route = components.find(c => c.types.includes('route'))?.long_name || '';
+                const addr = discovered.addressComponents;
+                const road = addr.road || '';
 
-                if (streetNumber && route) {
+                // Final check for essential US address components
+                if (addr.house_number && road && (addr.city || addr.town || addr.village)) {
+                    const city = addr.city || addr.town || addr.village;
+                    const zip = addr.postcode;
+
                     return {
-                        address: `${streetNumber} ${route}`,
-                        city: components.find(c => c.types.includes('locality'))?.long_name || city,
-                        state: components.find(c => c.types.includes('administrative_area_level_1'))?.short_name || state,
-                        zipCode: components.find(c => c.types.includes('postal_code'))?.long_name || zip,
-                        fullAddress: discovered.formattedAddress,
+                        address: `${addr.house_number} ${road}`,
+                        city: city,
+                        state: stateCode,
+                        zipCode: zip,
+                        fullAddress: `${addr.house_number} ${road}, ${city}, ${stateCode} ${zip}`,
                         coordinates: discovered.coordinates,
                         validated: true,
                         discoveryUsed: true
                     };
                 }
             }
-            await new Promise(r => setTimeout(r, 200));
         }
         return null;
     },
 
-
     /**
-     * Generate and validate an address for a school
-     * Will retry up to maxAttempts times to find a precise address
-     * @param {object} school - School object with city, state, zip
-     * @param {number} maxAttempts - Maximum validation attempts
-     * @returns {Promise<object>} - Valid address data
+     * Main entry point for generating a validated address
+     * @param {object} school - Not used for matching anymore, just for state context
+     * @returns {Promise<object>}
      */
-    async generateValidatedAddress(school, maxAttempts = 5) {
-        // First 3 attempts: Try probabilistic generator (fast)
-        for (let attempt = 0; attempt < 3; attempt++) {
-            const addressData = AddressGenerator.generateForSchool(school);
-            const validation = await this.validateAddress(addressData.fullAddress);
+    async generateValidatedAddress(school = null, targetState = null) {
+        const state = targetState || school?.state || AddressGenerator.random(Object.keys(AddressGenerator.states));
 
-            if (validation.isValid && validation.isPrecise) {
-                return {
-                    ...addressData,
-                    validated: true,
-                    validation: validation,
-                    fullAddress: validation.formattedAddress || addressData.fullAddress,
-                    coordinates: validation.coordinates
-                };
-            }
-        }
-
-        // If simple guessing fails, use dynamic discovery (accurate)
-        console.log('Switching to dynamic discovery mode for precise residential address...');
-        const discovered = await this.discoverRealResidentialAddress(school.zip, school.city, school.state);
+        console.log(`Starting real address discovery for state: ${state}`);
+        const discovered = await this.discoverRealResidentialAddress(state);
 
         if (discovered) {
             const studentInfo = AddressGenerator.generateName();
-            const stateName = AddressGenerator.states[discovered.state]?.name || discovered.state;
+            const stateName = AddressGenerator.states[state]?.name || state;
             const dob = AddressGenerator.generateDateOfBirth();
 
             return {
@@ -179,61 +185,20 @@ const AddressValidator = {
                 ...discovered,
                 stateName: stateName,
                 studentId: AddressGenerator.generateStudentId(),
-                phone: AddressGenerator.generatePhoneNumber(discovered.state),
+                phone: AddressGenerator.generatePhoneNumber(state),
                 dateOfBirth: dob.formatted,
                 dateOfBirthDate: dob.date
             };
         }
 
-        // Final fallback
-        const fallbackAddress = AddressGenerator.generateForSchool(school);
+        // Final fallback to probabilistic generator if OSM fails multiple times
+        console.warn('OSM discovery failed, falling back to probabilistic generator');
+        const fallback = AddressGenerator.generate(state);
         return {
-            ...fallbackAddress,
+            ...fallback,
             validated: false,
-            validationNote: 'Could not find precise address after discovery'
+            validationNote: 'OSM discovery failed'
         };
-    },
-
-
-    /**
-     * Search for real residential addresses near a location
-     * @param {string} city - City name
-     * @param {string} state - State code
-     * @param {string} zip - ZIP code
-     * @returns {Promise<array>} - Array of validated addresses
-     */
-    async findRealAddresses(city, state, zip, count = 10) {
-        const validAddresses = [];
-        let attempts = 0;
-        const maxAttempts = count * 3; // Allow 3x attempts to find valid addresses
-
-        while (validAddresses.length < count && attempts < maxAttempts) {
-            attempts++;
-
-            // Generate candidate address
-            const streetNumber = Math.floor(Math.random() * 9000) + 100;
-            const streets = [
-                'Oak St', 'Maple Ave', 'Cedar Ln', 'Pine Dr', 'Elm Ct',
-                'Main St', 'Park Ave', 'Washington St', 'Lincoln Ave', 'Jefferson Dr'
-            ];
-            const street = streets[Math.floor(Math.random() * streets.length)];
-            const address = `${streetNumber} ${street}, ${city}, ${state} ${zip}`;
-
-            const validation = await this.validateAddress(address);
-
-            if (validation.isValid && validation.isPrecise) {
-                validAddresses.push({
-                    address: validation.formattedAddress,
-                    coordinates: validation.coordinates,
-                    placeId: validation.placeId
-                });
-            }
-
-            // Small delay to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
-
-        return validAddresses;
     }
 };
 
@@ -241,3 +206,4 @@ const AddressValidator = {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AddressValidator;
 }
+

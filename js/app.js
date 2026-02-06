@@ -7,6 +7,7 @@ const App = {
     currentAddress: null,
     currentSchool: null,
     currentTranscript: null,
+    currentEmergencyContact: null,
     courses: [],
     availableSchools: [],
     schoolLogo: null,
@@ -234,7 +235,7 @@ const App = {
     },
 
     // Generate new address and match school
-    // Uses Google Geocoding API to validate addresses are precise (ROOFTOP)
+    // Uses OpenStreetMap (Nominatim) via AddressValidator to get precise real addresses
     async generateAddress() {
         const stateSelect = document.getElementById('stateSelect');
         const selectedState = stateSelect ? stateSelect.value : null;
@@ -243,32 +244,29 @@ const App = {
         // Show loading state
         if (generateBtn) {
             generateBtn.disabled = true;
-            generateBtn.innerHTML = '⏳ 验证地址中...';
+            generateBtn.innerHTML = '⏳ 发现真实地址中...';
         }
 
         try {
-            // Step 1: Select a school first (by state or random)
-            let school = null;
-            if (selectedState) {
-                // Get schools from selected state
-                const stateSchools = SchoolMatcher.getSchoolsByState(selectedState);
-                if (stateSchools.length > 0) {
-                    school = stateSchools[Math.floor(Math.random() * stateSchools.length)];
-                }
-            }
+            // Step 1: Generate and validate a real US address via OSM discovery
+            // This will pick a random point in the selected state (or random state) and find a real building
+            this.currentAddress = await AddressValidator.generateValidatedAddress(null, selectedState);
 
-            // Fallback: get random school from all available
-            if (!school && SchoolMatcher.schools.length > 0) {
+            const stateCode = this.currentAddress.state;
+
+            // Step 2: Select a school from the SAME state
+            const stateSchools = SchoolMatcher.getSchoolsByState(stateCode);
+            let school = null;
+
+            if (stateSchools.length > 0) {
+                // Pick a random school from the same state
+                school = stateSchools[Math.floor(Math.random() * stateSchools.length)];
+            } else if (SchoolMatcher.schools.length > 0) {
+                // Fallback to any random school if no schools in that state (unlikely for US states)
                 school = SchoolMatcher.schools[Math.floor(Math.random() * SchoolMatcher.schools.length)];
             }
 
-            // Step 2: Generate and validate address using Google Geocoding API
             if (school) {
-                // Use AddressValidator to get a precise address
-                this.currentAddress = await AddressValidator.generateValidatedAddress(school, 8);
-                // Add student ID
-                this.currentAddress.studentId = AddressGenerator.generateStudentId();
-
                 this.currentSchool = {
                     name: school.name,
                     address: school.address,
@@ -279,15 +277,21 @@ const App = {
                     fullAddress: `${school.address}, ${school.city}, ${school.state} ${school.zip}`
                 };
 
-                // Get multiple schools for selector
-                this.availableSchools = SchoolMatcher.matchMultiple(this.currentAddress, 5);
+                // For the school selector, provide other schools from the same state
+                this.availableSchools = SchoolMatcher.getSchoolsByState(stateCode)
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, 5)
+                    .map(s => ({
+                        name: s.name,
+                        address: s.address,
+                        city: s.city,
+                        state: s.state,
+                        zip: s.zip,
+                        phone: s.phone,
+                        fullAddress: `${s.address}, ${s.city}, ${s.state} ${s.zip}`
+                    }));
+
                 this.updateSchoolSelector();
-            } else {
-                // Fallback if no schools available
-                this.currentAddress = AddressGenerator.generate(selectedState || null);
-                this.currentAddress.studentId = AddressGenerator.generateStudentId();
-                this.currentSchool = SchoolMatcher.match(this.currentAddress);
-                this.availableSchools = [];
             }
 
             // Update UI
@@ -296,13 +300,19 @@ const App = {
 
             // Show validation status
             if (this.currentAddress.validated) {
-                console.log('✅ Address validated: ROOFTOP precision');
+                console.log('✅ Real address discovered via OSM');
             } else {
-                console.log('⚠️ Address may not be precise');
+                console.log('⚠️ Using probabilistic address (OSM discovery failed)');
             }
 
             // Auto-generate principal signature
             this.generateSignature();
+
+            // Generate emergency contact (parent with same last name, address, and phone)
+            this.generateEmergencyContact();
+
+            // Clear courses when generating new address
+            this.clearAllCourses();
 
             this.updateTranscriptPreview();
 
@@ -313,6 +323,9 @@ const App = {
                 void addressCard.offsetWidth; // Trigger reflow
                 addressCard.classList.add('animate-in');
             }
+        } catch (error) {
+            console.error('Generation Error:', error);
+            alert('地址生成失败，请重试 (Generation failed, please try again)');
         } finally {
             // Reset button state
             if (generateBtn) {
@@ -342,6 +355,47 @@ const App = {
 
         this.updateSignatureDisplay();
         this.updateTranscriptPreview();
+    },
+
+    // Generate emergency contact (parent) with same last name, address, and phone as student
+    generateEmergencyContact() {
+        if (!this.currentAddress) return;
+
+        // Generate parent first name (different gender from student for variety)
+        const parentGender = this.currentAddress.gender === 'male' ? 'female' : 'male';
+        const parentFirstNames = parentGender === 'male'
+            ? AddressGenerator.maleNames
+            : AddressGenerator.femaleNames;
+        const parentFirstName = parentFirstNames[Math.floor(Math.random() * parentFirstNames.length)];
+
+        // Use student's last name
+        const parentLastName = this.currentAddress.lastName;
+
+        this.currentEmergencyContact = {
+            name: `${parentFirstName} ${parentLastName}`,
+            relationship: 'Parent/Guardian',
+            address: this.currentAddress.fullAddress,
+            phone: this.currentAddress.phone
+        };
+
+        this.updateEmergencyContactDisplay();
+    },
+
+    // Update emergency contact display
+    updateEmergencyContactDisplay() {
+        if (!this.currentEmergencyContact) return;
+
+        const fields = {
+            'displayEmergencyName': this.currentEmergencyContact.name,
+            'displayEmergencyRelation': this.currentEmergencyContact.relationship,
+            'displayEmergencyAddress': this.currentEmergencyContact.address,
+            'displayEmergencyPhone': this.currentEmergencyContact.phone
+        };
+
+        Object.entries(fields).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        });
     },
 
     // Update signature display in transcript
@@ -460,7 +514,7 @@ const App = {
 
 
 
-    // Generate sample courses based on birth date
+    // Generate sample courses based on birth date - always 4 years
     generateSampleCourses() {
         // Calculate start year from birth date
         let startYear = new Date().getFullYear() - 3; // Default
@@ -474,13 +528,19 @@ const App = {
         const currentMonth = new Date().getMonth();
         const maxYear = currentMonth >= 7 ? currentYear : currentYear - 1;
 
-        // Adjust years if needed
-        const numYears = Math.min(4, maxYear - startYear + 1);
-        if (numYears <= 0) {
-            startYear = maxYear - 3;
+        // Adjust start year if it would extend into the future
+        // Always generate 4 years of courses
+        const numYears = 4;
+        if (startYear + numYears - 1 > maxYear) {
+            startYear = maxYear - numYears + 1;
         }
 
-        this.courses = TranscriptGenerator.generateSampleCourses(startYear, Math.max(1, numYears));
+        // Ensure startYear is reasonable (not too far in the past)
+        if (startYear < currentYear - 10) {
+            startYear = currentYear - 3;
+        }
+
+        this.courses = TranscriptGenerator.generateSampleCourses(startYear, numYears);
         this.updateCourseList();
         this.updateTranscriptPreview();
     },
@@ -578,6 +638,14 @@ const App = {
         this.setPreviewText('previewStudentAddress', t.student.address);
         this.setPreviewText('previewStudentDob', t.student.dateOfBirth);
         this.setPreviewText('previewStudentPhone', t.student.phone);
+
+        // Emergency contact
+        if (this.currentEmergencyContact) {
+            this.setPreviewText('previewEmergencyName', this.currentEmergencyContact.name);
+            this.setPreviewText('previewEmergencyRelation', this.currentEmergencyContact.relationship);
+            this.setPreviewText('previewEmergencyAddress', this.currentEmergencyContact.address);
+            this.setPreviewText('previewEmergencyPhone', this.currentEmergencyContact.phone);
+        }
 
         // Academic info
         this.setPreviewText('previewGradeLevel', t.academic.gradeLevel);
@@ -748,28 +816,60 @@ const App = {
             // Save and exit edit mode
             if (btn) btn.textContent = '✏️ 编辑';
 
+            let dobChanged = false;
             editableFields.forEach(field => {
                 const displayEl = document.getElementById(field.display);
                 const editEl = document.getElementById(field.edit);
                 if (displayEl && editEl) {
                     const newValue = editEl.value.trim();
                     if (newValue) {
+                        // Check if DOB changed
+                        if (field.key === 'dateOfBirth' && displayEl.textContent !== newValue) {
+                            dobChanged = true;
+                        }
                         displayEl.textContent = newValue;
                         // Update currentAddress
                         if (field.key === 'name') {
                             this.currentAddress.name = newValue;
+                            // Update emergency contact last name if student name changed
+                            const nameParts = newValue.split(' ');
+                            if (nameParts.length >= 2 && this.currentEmergencyContact) {
+                                const newLastName = nameParts[nameParts.length - 1];
+                                const emergencyNameParts = this.currentEmergencyContact.name.split(' ');
+                                emergencyNameParts[emergencyNameParts.length - 1] = newLastName;
+                                this.currentEmergencyContact.name = emergencyNameParts.join(' ');
+                                this.updateEmergencyContactDisplay();
+                            }
                         } else if (field.key === 'dateOfBirth') {
                             this.currentAddress.dateOfBirth = newValue;
                         } else if (field.key === 'fullAddress') {
                             this.currentAddress.fullAddress = newValue;
+                            // Update emergency contact address too
+                            if (this.currentEmergencyContact) {
+                                this.currentEmergencyContact.address = newValue;
+                                this.updateEmergencyContactDisplay();
+                            }
                         } else if (field.key === 'phone') {
                             this.currentAddress.phone = newValue;
+                            // Update emergency contact phone too
+                            if (this.currentEmergencyContact) {
+                                this.currentEmergencyContact.phone = newValue;
+                                this.updateEmergencyContactDisplay();
+                            }
                         }
                     }
                     displayEl.classList.remove('hidden');
                     editEl.classList.add('hidden');
                 }
             });
+
+            // If DOB changed and there are courses, ask user if they want to regenerate
+            if (dobChanged && this.courses.length > 0) {
+                const regenerate = confirm('出生日期已更改。是否要根据新日期重新生成课程？\n(Date of birth changed. Do you want to regenerate courses based on the new date?)');
+                if (regenerate) {
+                    this.generateSampleCourses();
+                }
+            }
 
             this.updateTranscriptPreview();
         }
