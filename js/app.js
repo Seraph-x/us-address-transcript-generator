@@ -287,6 +287,16 @@ const App = {
             this.updateAddressDisplay();
             this.updateSchoolDisplay();
 
+            // Show student info and emergency contact cards (they start hidden)
+            const studentInfoCard = document.getElementById('studentInfoCard');
+            const emergencyContactCard = document.getElementById('emergencyContactCard');
+            if (studentInfoCard) {
+                studentInfoCard.classList.remove('hidden');
+            }
+            if (emergencyContactCard) {
+                emergencyContactCard.classList.remove('hidden');
+            }
+
             // Show validation status
             if (this.currentAddress.validated) {
                 console.log('✅ Real address discovered via OSM');
