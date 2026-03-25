@@ -51,8 +51,8 @@ const App = {
         // Bind event listeners
         this.bindEvents();
 
-        // Generate initial data
-        await this.generateAddress();
+        // Don't auto-generate - let user click the button manually
+        // await this.generateAddress();
     },
 
     // Populate state dropdown with US states only
@@ -130,6 +130,74 @@ const App = {
         const generateBtn = document.getElementById('generateBtn');
         if (generateBtn) {
             generateBtn.addEventListener('click', async () => await this.generateAddress());
+        }
+
+        // Save button - toggle dropdown
+        const saveBtn = document.getElementById('saveBtn');
+        const saveDropdown = document.getElementById('saveDropdown');
+        if (saveBtn && saveDropdown) {
+            saveBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                saveDropdown.classList.remove('hidden');
+                saveDropdown.classList.toggle('show');
+            });
+
+            // Save slot buttons
+            document.querySelectorAll('.save-slot').forEach(slot => {
+                slot.addEventListener('click', (e) => {
+                    const slotNum = e.target.dataset.slot;
+                    this.saveToSlot(slotNum);
+                    saveDropdown.classList.remove('show');
+                });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.save-container')) {
+                    saveDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // Load button - toggle dropdown and show slot status
+        const loadBtn = document.getElementById('loadBtn');
+        const loadDropdown = document.getElementById('loadDropdown');
+        if (loadBtn && loadDropdown) {
+            loadBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                loadDropdown.classList.remove('hidden');
+                loadDropdown.classList.toggle('show');
+                // Update slot status when dropdown opens
+                this.updateSlotStatus();
+            });
+
+            // Load slot buttons (exclude clicks on delete button)
+            document.querySelectorAll('.load-slot').forEach(slot => {
+                slot.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('slot-delete')) return;
+                    const slotNum = e.currentTarget.dataset.slot;
+                    if (!e.currentTarget.classList.contains('empty')) {
+                        this.loadFromSlot(slotNum);
+                        loadDropdown.classList.remove('show');
+                    }
+                });
+            });
+
+            // Delete button handlers
+            document.querySelectorAll('.slot-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const slotNum = e.target.dataset.slot;
+                    this.deleteSlot(slotNum);
+                });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.load-container')) {
+                    loadDropdown.classList.remove('show');
+                }
+            });
         }
 
         // Add course button
@@ -234,6 +302,153 @@ const App = {
         }
     },
 
+    // Save to a specific slot (1-4)
+    saveToSlot(slotNum) {
+        const data = {
+            currentAddress: this.currentAddress,
+            currentSchool: this.currentSchool,
+            currentEmergencyContact: this.currentEmergencyContact,
+            courses: this.courses,
+            principalSignature: this.principalSignature,
+            schoolLogo: this.schoolLogo,
+            timestamp: new Date().toISOString()
+        };
+
+        try {
+            localStorage.setItem(`transcriptData_slot${slotNum}`, JSON.stringify(data));
+            // Show success feedback
+            const saveBtn = document.getElementById('saveBtn');
+            if (saveBtn) {
+                const originalText = saveBtn.textContent;
+                saveBtn.textContent = `✅ 存档 ${slotNum}`;
+                setTimeout(() => {
+                    saveBtn.textContent = originalText;
+                }, 2000);
+            }
+            console.log(`✅ Data saved to slot ${slotNum}`);
+        } catch (error) {
+            console.error('❌ Failed to save data:', error);
+            alert('保存失败: ' + error.message);
+        }
+    },
+
+    // Update slot status indicators in load dropdown
+    updateSlotStatus() {
+        for (let i = 1; i <= 4; i++) {
+            const data = localStorage.getItem(`transcriptData_slot${i}`);
+            const statusEl = document.getElementById(`slot${i}Status`);
+            const slotEl = document.querySelector(`.load-slot[data-slot="${i}"]`);
+
+            if (data) {
+                const parsed = JSON.parse(data);
+                const date = new Date(parsed.timestamp);
+                const dateStr = date.toLocaleDateString('zh-CN', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                if (statusEl) {
+                    statusEl.textContent = dateStr;
+                    statusEl.classList.add('has-data');
+                }
+                if (slotEl) {
+                    slotEl.classList.remove('empty');
+                }
+            } else {
+                if (statusEl) {
+                    statusEl.textContent = '空';
+                    statusEl.classList.remove('has-data');
+                }
+                if (slotEl) {
+                    slotEl.classList.add('empty');
+                }
+            }
+        }
+    },
+
+    // Load data from a specific slot
+    loadFromSlot(slotNum) {
+        try {
+            const data = localStorage.getItem(`transcriptData_slot${slotNum}`);
+            if (!data) {
+                alert('该存档为空');
+                return;
+            }
+
+            const parsed = JSON.parse(data);
+
+            // Restore state
+            this.currentAddress = parsed.currentAddress;
+            this.currentSchool = parsed.currentSchool;
+            this.currentEmergencyContact = parsed.currentEmergencyContact;
+            this.courses = parsed.courses || [];
+            this.principalSignature = parsed.principalSignature;
+            this.schoolLogo = parsed.schoolLogo;
+
+            // Update all UI elements
+            this.updateAddressDisplay();
+            this.updateSchoolDisplay();
+            this.updateEmergencyContactDisplay();
+            this.updateCoursesDisplay();
+            this.updateTranscriptPreview();
+
+            // Show success feedback
+            const loadBtn = document.getElementById('loadBtn');
+            if (loadBtn) {
+                const originalText = loadBtn.textContent;
+                loadBtn.textContent = `✅ 已读取`;
+                setTimeout(() => {
+                    loadBtn.textContent = originalText;
+                }, 2000);
+            }
+
+            console.log(`✅ Data loaded from slot ${slotNum}`);
+        } catch (error) {
+            console.error('❌ Failed to load data:', error);
+            alert('读取失败: ' + error.message);
+        }
+    },
+
+    // Delete a specific slot
+    deleteSlot(slotNum) {
+        if (!confirm(`确定要删除存档 ${slotNum} 吗？`)) {
+            return;
+        }
+        try {
+            localStorage.removeItem(`transcriptData_slot${slotNum}`);
+            this.updateSlotStatus();
+            console.log(`🗑️ Slot ${slotNum} deleted`);
+        } catch (error) {
+            console.error('❌ Failed to delete slot:', error);
+        }
+    },
+
+    // Update emergency contact display
+    updateEmergencyContactDisplay() {
+        if (!this.currentEmergencyContact) return;
+
+        const ec = this.currentEmergencyContact;
+        const nameEl = document.getElementById('emergencyName');
+        const addressEl = document.getElementById('emergencyAddress');
+        const phoneEl = document.getElementById('emergencyPhone');
+
+        if (nameEl) nameEl.textContent = ec.name || '-';
+        if (addressEl) addressEl.textContent = ec.address || '-';
+        if (phoneEl) phoneEl.textContent = ec.phone || '-';
+    },
+
+    // Update courses display in UI
+    updateCoursesDisplay() {
+        const coursesList = document.getElementById('coursesList');
+        if (!coursesList) return;
+
+        coursesList.innerHTML = '';
+        this.courses.forEach((course, index) => {
+            this.addCourseRow(course, index);
+        });
+    },
+
     // Generate new address and match school
     // Uses OpenStreetMap (Nominatim) via AddressValidator to get precise real addresses
     async generateAddress() {
@@ -286,6 +501,12 @@ const App = {
             // Update UI
             this.updateAddressDisplay();
             this.updateSchoolDisplay();
+
+            // Show student info and emergency contact cards (they start hidden)
+            const studentInfoCard = document.getElementById('studentInfoCard');
+            if (studentInfoCard) {
+                studentInfoCard.classList.remove('hidden');
+            }
 
             // Show validation status
             if (this.currentAddress.validated) {
@@ -375,10 +596,10 @@ const App = {
         if (!this.currentEmergencyContact) return;
 
         const fields = {
-            'displayEmergencyName': this.currentEmergencyContact.name,
-            'displayEmergencyRelation': this.currentEmergencyContact.relationship,
-            'displayEmergencyAddress': this.currentEmergencyContact.address,
-            'displayEmergencyPhone': this.currentEmergencyContact.phone
+            'displayGuardianName': this.currentEmergencyContact.name,
+            'displayGuardianRelation': this.currentEmergencyContact.relationship,
+            'previewEmergencyName': this.currentEmergencyContact.name,
+            'previewEmergencyRelation': this.currentEmergencyContact.relationship
         };
 
         Object.entries(fields).forEach(([id, value]) => {
@@ -782,10 +1003,14 @@ const App = {
         const btn = document.getElementById('editStudentBtn');
 
         const editableFields = [
+            { display: 'displayStudentId', edit: 'editStudentId', key: 'studentId' },
             { display: 'displayName', edit: 'editName', key: 'name' },
+            { display: 'displayGender', edit: 'editGender', key: 'gender' },
             { display: 'displayDob', edit: 'editDob', key: 'dateOfBirth' },
             { display: 'displayAddress', edit: 'editAddress', key: 'fullAddress' },
-            { display: 'displayPhone', edit: 'editPhone', key: 'phone' }
+            { display: 'displayPhone', edit: 'editPhone', key: 'phone' },
+            { display: 'displayGuardianRelation', edit: 'editGuardianRelation', key: 'guardianRelation' },
+            { display: 'displayGuardianName', edit: 'editGuardianName', key: 'guardianName' }
         ];
 
         if (this.isEditMode) {
@@ -843,6 +1068,21 @@ const App = {
                             // Update emergency contact phone too
                             if (this.currentEmergencyContact) {
                                 this.currentEmergencyContact.phone = newValue;
+                                this.updateEmergencyContactDisplay();
+                            }
+                        } else if (field.key === 'studentId') {
+                            this.currentAddress.studentId = newValue;
+                        } else if (field.key === 'gender') {
+                            // Update gender display text
+                            this.currentAddress.gender = newValue.toLowerCase().includes('female') || newValue.includes('女') ? 'female' : 'male';
+                        } else if (field.key === 'guardianRelation') {
+                            if (this.currentEmergencyContact) {
+                                this.currentEmergencyContact.relationship = newValue;
+                                this.updateEmergencyContactDisplay();
+                            }
+                        } else if (field.key === 'guardianName') {
+                            if (this.currentEmergencyContact) {
+                                this.currentEmergencyContact.name = newValue;
                                 this.updateEmergencyContactDisplay();
                             }
                         }

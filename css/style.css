@@ -312,6 +312,7 @@ h3 {
 .info-value {
   flex: 1;
   font-weight: 500;
+  min-width: 0;
 }
 
 .copy-btn {
@@ -323,6 +324,8 @@ h3 {
   font-size: 0.875rem;
   transition: all var(--transition-fast);
   color: var(--text-secondary);
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .copy-btn:hover {
@@ -577,8 +580,9 @@ select.form-control {
   padding: 4px 8px;
   color: var(--text-primary);
   font-size: 0.9rem;
-  width: 100%;
-  max-width: 200px;
+  flex: 1;
+  min-width: 0;
+  max-width: none;
 }
 
 .btn-sm {
@@ -931,8 +935,11 @@ select.form-control {
   z-index: 1000;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+  width: 100px;
+  height: 36px;
+  padding: 0;
   background: var(--bg-card);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -941,6 +948,225 @@ select.form-control {
   cursor: pointer;
   transition: all var(--transition-normal);
   box-shadow: var(--shadow-card);
+  box-sizing: border-box;
+}
+
+/* Save Button - positioned left of theme toggle */
+.save-btn {
+  position: fixed;
+  top: 20px;
+  right: 130px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100px;
+  height: 36px;
+  padding: 0;
+  background: var(--success-gradient);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid transparent;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: 0 4px 15px rgba(56, 239, 125, 0.3);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(56, 239, 125, 0.4);
+}
+
+/* Save Container */
+.save-container {
+  position: fixed;
+  top: 20px;
+  right: 130px;
+  z-index: 1000;
+}
+
+.save-container .save-btn {
+  position: static;
+}
+
+/* Save Dropdown */
+.save-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 8px;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.save-dropdown.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.save-dropdown.hidden {
+  display: none;
+}
+
+.save-slot {
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.save-slot:hover {
+  background: var(--bg-hover);
+}
+
+.save-slot:not(:last-child) {
+  border-bottom: 1px solid var(--border-glass);
+}
+
+/* Load Container */
+.load-container {
+  position: fixed;
+  top: 20px;
+  right: 240px;
+  z-index: 1000;
+}
+
+/* Load Button */
+.load-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100px;
+  height: 36px;
+  padding: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid transparent;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.load-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Load Dropdown */
+.load-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 8px;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+  min-width: 140px;
+}
+
+.load-dropdown.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.load-dropdown.hidden {
+  display: none;
+}
+
+.load-slot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.load-slot:hover {
+  background: var(--bg-hover);
+}
+
+.load-slot:not(:last-child) {
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.load-slot.empty {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slot-name {
+  font-weight: 500;
+}
+
+.slot-status {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.slot-status.has-data {
+  color: var(--success);
+}
+
+/* Delete Button */
+.slot-delete {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 0.75rem;
+  opacity: 0.5;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.slot-delete:hover {
+  opacity: 1;
+  transform: scale(1.2);
 }
 
 .theme-toggle:hover {

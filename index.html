@@ -29,11 +29,52 @@
     <span class="theme-toggle-label" id="themeLabel">暗色</span>
   </button>
 
+  <!-- Save Button with Dropdown -->
+  <div class="save-container" id="saveContainer">
+    <button class="save-btn" id="saveBtn" title="保存数据">
+      💾 保存
+    </button>
+    <div class="save-dropdown hidden" id="saveDropdown">
+      <button class="save-slot" data-slot="1">存档 1</button>
+      <button class="save-slot" data-slot="2">存档 2</button>
+      <button class="save-slot" data-slot="3">存档 3</button>
+      <button class="save-slot" data-slot="4">存档 4</button>
+    </div>
+  </div>
+
+  <!-- Load Button with Dropdown -->
+  <div class="load-container" id="loadContainer">
+    <button class="load-btn" id="loadBtn" title="读取数据">
+      📂 读取
+    </button>
+    <div class="load-dropdown hidden" id="loadDropdown">
+      <div class="load-slot" data-slot="1">
+        <span class="slot-name">存档 1</span>
+        <span class="slot-status" id="slot1Status">空</span>
+        <button class="slot-delete" data-slot="1" title="删除存档">❌</button>
+      </div>
+      <div class="load-slot" data-slot="2">
+        <span class="slot-name">存档 2</span>
+        <span class="slot-status" id="slot2Status">空</span>
+        <button class="slot-delete" data-slot="2" title="删除存档">❌</button>
+      </div>
+      <div class="load-slot" data-slot="3">
+        <span class="slot-name">存档 3</span>
+        <span class="slot-status" id="slot3Status">空</span>
+        <button class="slot-delete" data-slot="3" title="删除存档">❌</button>
+      </div>
+      <div class="load-slot" data-slot="4">
+        <span class="slot-name">存档 4</span>
+        <span class="slot-status" id="slot4Status">空</span>
+        <button class="slot-delete" data-slot="4" title="删除存档">❌</button>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
     <!-- Header -->
     <header class="app-header">
-      <h1>🇺🇸 美国地址 & 高中成绩单生成器</h1>
-      <p>生成真实格式的美国地址，自动匹配附近公立高中，一键生成成绩单 PDF</p>
+      <h1>美国地址 & 高中成绩单生成器</h1>
     </header>
 
     <!-- Main Content -->
@@ -56,15 +97,11 @@
         </div>
 
         <!-- Generated Address -->
-        <div class="card address-card mb-lg">
-          <div class="card-header">
-            <h2><span class="icon">👤</span> 学生信息</h2>
-            <button id="editStudentBtn" class="btn btn-secondary btn-sm">✏️ 编辑</button>
-          </div>
-
+        <div class="card address-card mb-lg hidden" id="studentInfoCard">
           <div class="info-row">
-            <span class="info-label">学生ID</span>
-            <span class="info-value" id="displayStudentId">-</span>
+            <span class="info-label">ID</span>
+            <span class="info-value editable-field" id="displayStudentId">-</span>
+            <input type="text" class="inline-edit hidden" id="editStudentId">
             <button class="copy-btn" data-target="displayStudentId" title="复制">📋</button>
           </div>
 
@@ -77,7 +114,9 @@
 
           <div class="info-row">
             <span class="info-label">性别</span>
-            <span class="info-value" id="displayGender">-</span>
+            <span class="info-value editable-field" id="displayGender">-</span>
+            <input type="text" class="inline-edit hidden" id="editGender">
+            <button class="copy-btn" data-target="displayGender" title="复制">📋</button>
           </div>
 
           <div class="info-row">
@@ -100,36 +139,21 @@
             <input type="text" class="inline-edit hidden" id="editPhone">
             <button class="copy-btn" data-target="displayPhone" title="复制">📋</button>
           </div>
-        </div>
 
-        <!-- Emergency Contact -->
-        <div class="card emergency-contact-card mb-lg">
-          <div class="card-header">
-            <h2><span class="icon">👨‍👩‍👧</span> 紧急联系人 (家长)</h2>
+          <div class="info-row">
+            <span class="info-label">关系</span>
+            <span class="info-value editable-field" id="displayGuardianRelation">Parent/Guardian</span>
+            <input type="text" class="inline-edit hidden" id="editGuardianRelation">
+            <button class="copy-btn" data-target="displayGuardianRelation" title="复制">📋</button>
           </div>
 
           <div class="info-row">
             <span class="info-label">姓名</span>
-            <span class="info-value" id="displayEmergencyName">-</span>
-            <button class="copy-btn" data-target="displayEmergencyName" title="复制">📋</button>
+            <span class="info-value editable-field" id="displayGuardianName">-</span>
+            <input type="text" class="inline-edit hidden" id="editGuardianName">
+            <button class="copy-btn" data-target="displayGuardianName" title="复制">📋</button>
           </div>
-
-          <div class="info-row">
-            <span class="info-label">关系</span>
-            <span class="info-value" id="displayEmergencyRelation">Parent/Guardian</span>
-          </div>
-
-          <div class="info-row">
-            <span class="info-label">地址</span>
-            <span class="info-value" id="displayEmergencyAddress">-</span>
-            <button class="copy-btn" data-target="displayEmergencyAddress" title="复制">📋</button>
-          </div>
-
-          <div class="info-row">
-            <span class="info-label">电话</span>
-            <span class="info-value" id="displayEmergencyPhone">-</span>
-            <button class="copy-btn" data-target="displayEmergencyPhone" title="复制">📋</button>
-          </div>
+          <button id="editStudentBtn" class="btn btn-primary btn-full mt-md">✏️ 编辑</button>
         </div>
 
         <!-- Matched School -->
@@ -321,14 +345,6 @@
                   <div class="transcript-row">
                     <span class="transcript-label">Relationship:</span>
                     <span class="transcript-value" id="previewEmergencyRelation">Parent/Guardian</span>
-                  </div>
-                  <div class="transcript-row">
-                    <span class="transcript-label">Address:</span>
-                    <span class="transcript-value" id="previewEmergencyAddress">-</span>
-                  </div>
-                  <div class="transcript-row">
-                    <span class="transcript-label">Phone:</span>
-                    <span class="transcript-value" id="previewEmergencyPhone">-</span>
                   </div>
                 </div>
               </div>
